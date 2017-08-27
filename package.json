@@ -1,0 +1,32 @@
+{
+  "name": "gobo",
+  "version": "0.1.0",
+  "description": "",
+  "author": "Olivier Lombart (kubicle)",
+  "license": "MIT",
+  "scripts": {
+    "build": "browserify src/Gobo.ts -p [ tsify --noImplicitAny ] --standalone gobo | uglifyjs -o bin/gobo.js -m --mangle-props=unquoted --reserved-file bin/reserved.json --reserve-domprops -c properties=false,pure_funcs=['log.debug','test.assert']",
+    "dev-build": "watchify src/Gobo.ts -p [ tsify --noImplicitAny ] --standalone gobo -o bin/gobo-dev.js -v",
+    "test-build": "watchify test/Test.ts -p [ tsify ] --standalone gobo -o bin/test-dev.js -v"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kubicle/gobo"
+  },
+  "keywords": [
+    "baduk",
+    "board",
+    "go",
+    "igo",
+    "weiqi"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "browserify": "^10.2.4",
+    "watchify": "^3.2.2",
+    "tsify": "^3.0.1",
+    "typescript": "^2.4.2",
+    "uglify-js": "^2.8.18"
+  }
+}
