@@ -2,7 +2,7 @@ import { LogicalBoard } from './LogicalBoard';
 import { Vertex, Color } from './Vertex';
 
 
-const starPoints:{[index:number] : number[][]} = {
+const starPoints:{[index:number] : [number,number][]} = {
 	9:  [[5,5]],
 	13: [[4,4],[10,4],[4,10],[10,10]],
 	19: [[4,4],[10,4],[16,4],[4,10],[10,10],[16,10],[4,16],[10,16],[16,16]]
@@ -63,12 +63,18 @@ class BoardRenderer {
 	stoneShadow: HTMLCanvasElement;
 	miniShell: HTMLCanvasElement;
 	miniSlate: HTMLCanvasElement;
-	shellPatternIndexes: number[][]; // indexes are coordinates as j,i
-	slatePatternIndexes: number[][];
+	shellPatternIndexes: [number,number][]; // indexes are coordinates as j,i
+	slatePatternIndexes: [number,number][];
 
-	public constructor(options?: any) {
-		options = options || {};
-
+	public constructor(options:{
+		widthPx:number,
+		heightPx?:number,
+		marginPx?:number,
+		isSketch?:boolean,
+		noCoords?:boolean,
+		backgroundCanvas?:HTMLCanvasElement,
+		background?:string
+	}) {
 		this.width = options.widthPx;
 		this.height = options.heightPx || options.widthPx;
 		if (!options.widthPx) {
@@ -162,7 +168,7 @@ class BoardRenderer {
 	 * @param y
 	 * @returns [i, j] - with 0,0 as bottom-left corner of the grid
 	 */
-	public pixelToGridCoordinates(x:number, y:number) :number[] {
+	public pixelToGridCoordinates(x:number, y:number) :[number,number] {
     	const i = Math.round((x - this.vertexLeft) / this.vertexSize);
     	const j = Math.round((this.vertexBottom - y) / this.vertexSize);
 		return [i, j];
@@ -197,14 +203,14 @@ class BoardRenderer {
 		// So that each "repaint" shows the same pattern for a given stone position, pre-decides pattern indexes
 		this.slatePatternIndexes = [];
 		for (let j = 0; j < this.gobanSize; j++) {
-			let row = this.slatePatternIndexes[j] = <number[]>[];
+			let row = this.slatePatternIndexes[j] = <[number,number]>[];
 			for (let i = 0; i < this.gobanSize; i++) {
 				row.push(~~(Math.random() * SLATE_STONE_COUNT));
 			}
 		}
 		this.shellPatternIndexes = [];
 		for (let j = 0; j < this.gobanSize; j++) {
-			let row = this.shellPatternIndexes[j] = <number[]>[];
+			let row = this.shellPatternIndexes[j] = <[number,number]>[];
 			for (let i = 0; i < this.gobanSize; i++) {
 				const indexIn3x3 = i % 3 + 3 * (j % 3);
 				const whichGrid = (i % 6 < 3) === (j % 6 < 3) ? 0 : 1;
@@ -258,7 +264,7 @@ class BoardRenderer {
 
 	private drawStarPoints() {
 		this.ctx.fillStyle = '#000';
-		let points = <number[][]>(starPoints[this.gobanSize]);
+		let points = starPoints[this.gobanSize];
 		if (!points) return;
 		for (let n = 0; n < points.length; n++) {
 			let coords = points[n];
