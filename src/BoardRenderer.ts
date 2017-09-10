@@ -1,5 +1,6 @@
 import { LogicalBoard } from './LogicalBoard';
 import { Vertex, Color } from './Vertex';
+import { paintCanvas } from './wood.js';
 
 
 const starPoints:{[index:number] : [number,number][]} = {
@@ -42,9 +43,9 @@ class BoardRenderer {
 
 	gridMargin: number;
 	gridExtraMargin: number;
+	background: string; // as provided in options
 	backgroundColor: string;
-	backgroundFileName: string;
-	backgroundImage: HTMLImageElement;
+	backgroundCanvas: HTMLCanvasElement;
 	fontSize: number;
 	coordFontSize: number;
 	withCoords: boolean;
@@ -86,25 +87,17 @@ class BoardRenderer {
 		this.withCoords = !options.noCoords;
 		this.gridExtraMargin = options.marginPx || DEFAULT_MARGIN_PX;
 
-		const background = options.background;
-		if (!background.startsWith('#') && !background.startsWith('rgb(')) {
-			if (this.isSketch) {
-				this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
-			} else {
-				this.backgroundFileName = background;
-			}
-		} else {
-			this.backgroundColor = background || DEFAULT_BACKGROUND_COLOR;
-		}
-		this.backgroundImage = null;
+		this.backgroundCanvas = options.backgroundCanvas;
+		this.background = options.background;
 	}
 
-	public prepare(logicalBoard: LogicalBoard, cb: () => void) {
+	public prepare(logicalBoard:LogicalBoard) :HTMLCanvasElement {
 		this.logicalBoard = logicalBoard;
 		this.computeDimensions();
 		if (!this.isSketch) this.prepareStonePatterns();
 		this.createMainCanvas();
-		this.prepareBackground(cb);
+		this.prepareBackground();
+		return this.canvas;
 	}
 
 	public render() {
@@ -174,12 +167,19 @@ class BoardRenderer {
 		return [i, j];
 	}
 
-	private prepareBackground(cb: () => void) {
-		if (this.isSketch || !this.backgroundFileName) return cb();
+	private prepareBackground() {
+		if (this.backgroundCanvas) return;
 
-		let image = this.backgroundImage = new Image();
-		image.src = this.backgroundFileName;
-		image.onload = cb;
+		if (!this.background) {
+			this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
+		} else if (this.background[0] === '#' || this.background.substr(0, 3).toLowerCase() === 'rgb') {
+			this.backgroundColor = this.background;
+		} else if (this.background === 'wood') {
+			if (this.isSketch || this.backgroundCanvas) return; // ignore if canvas is passed or sketch mode
+			var canvas = this.backgroundCanvas = document.createElement('canvas');
+			canvas.width = 200; canvas.height = 200;
+			paintCanvas(canvas, Math.random());
+		}
 	}
 
 	private prepareStonePatterns() {
@@ -225,17 +225,9 @@ class BoardRenderer {
 		this.drawSlateStone(center, center, this.stoneRadius / 2);
 	}
 
-	private newImageFromCanvas(width:number, height:number) {
-		var image = new Image();
-		image.src = this.canvas.toDataURL();
-		this.ctx.clearRect(0, 0, width, height);
-		return image;
-	}
-
 	private setBackgroundFillStyle() {
-		if (this.backgroundFileName) {
-			let pattern = this.ctx.createPattern(this.backgroundImage, 'repeat');
-			this.ctx.fillStyle = pattern;
+		if (this.backgroundCanvas) {
+			this.ctx.fillStyle = this.ctx.createPattern(this.backgroundCanvas, 'repeat');
 		} else {
 			this.ctx.fillStyle = this.backgroundColor;
 		}

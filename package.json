@@ -5,8 +5,8 @@
   "author": "Olivier Lombart (kubicle)",
   "license": "MIT",
   "scripts": {
-    "build": "browserify src/Gobo.ts -p [ tsify --noImplicitAny ] --standalone gobo | uglifyjs -o bin/gobo.js -m --mangle-props=unquoted --reserved-file bin/reserved.json --reserve-domprops -c properties=false,pure_funcs=['log.debug','test.assert']",
-    "dev-build": "watchify src/Gobo.ts -p [ tsify --noImplicitAny ] --standalone gobo -o bin/gobo-dev.js -v",
+    "build": "browserify src/Gobo.ts -p [ tsify --noImplicitAny --allowJs ] --standalone gobo | uglifyjs -o bin/gobo.js -m --mangle-props=unquoted --reserved-file bin/reserved.json --reserve-domprops -c properties=false,pure_funcs=['log.debug','test.assert']",
+    "dev-build": "watchify src/Gobo.ts -p [ tsify --noImplicitAny --allowJs ] --standalone gobo -o bin/gobo-dev.js -v",
     "test-build": "watchify test/Test.ts -p [ tsify --allowJs ] -o test/test.js -v"
   },
   "repository": {
