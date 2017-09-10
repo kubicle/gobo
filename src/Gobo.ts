@@ -6,25 +6,21 @@ import { BoardRenderer } from './BoardRenderer';
 class Gobo {
 	board: LogicalBoard;
 	renderer: BoardRenderer;
-	parent: HTMLElement;
+	public canvas: HTMLCanvasElement;
 
-	constructor(parent:HTMLElement, options:any) {
-		this.parent = parent;
-		parent.textContent = '';
- 		options.widthPx = options.widthPx || parent.clientWidth;
-
+	constructor(options:{
+		gobanSize:number,
+		widthPx:number,
+		heightPx?:number,
+		marginPx?:number,
+		isSketch?:boolean,
+		noCoords?:boolean,
+		backgroundCanvas?:HTMLCanvasElement,
+		background?:string
+	}) {
 		this.board = new LogicalBoard(options.gobanSize || 19);
-
 		this.renderer = new BoardRenderer(options);
-	}
-
-	public prepareRenderer(cb: (err:Error, canvas:HTMLCanvasElement) => void) {
-		var self = this;
-		this.renderer.prepare(this.board, function () {
-			let canvas = self.renderer.getCanvas();
-			self.parent.appendChild(canvas);
-			cb(null, canvas);
-		});
+		this.canvas = this.renderer.prepare(this.board);
 	}
 
 	public render() {
