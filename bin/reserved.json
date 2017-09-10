@@ -1,13 +1,11 @@
 {
   "vars": [],
   "props": [
-    "util", "inherits", "lessify", "cssify", "events", "fs", "_process", "exports",
-
-    "contra", "atoa", "ticky",
+    "exports", "inherits",
 
     "Gobo",
-    "gobanSize", "widthPx", "heightPx", "marginPx", "noCoords", "background", "isSketch",
-    "prepareRenderer", "pixelToGridCoordinates", "setStoneAt", "setMarkAt", "setLabelAt",
+    "gobanSize", "widthPx", "heightPx", "marginPx", "noCoords", "background", "backgroundCanvas", "isSketch",
+    "pixelToGridCoordinates", "setStoneAt", "setMarkAt", "setLabelAt",
     "render", "getStoneColorAt", "clearVertexAt"
   ]
 }
