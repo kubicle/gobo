@@ -66,12 +66,15 @@ class GoboTest {
 
 		this.board.setMarkAt(2, 8, '[]');
 		this.board.setStoneAt(2, 7, Color.BLACK); this.board.setMarkAt(2, 7, '[]');
-		this.board.setStoneAt(3, 6, Color.WHITE); this.board.setMarkAt(3, 6, '[]');
+		this.board.setStoneAt(3, 6, Color.WHITE); this.board.setMarkAt(3, 6, '[]:5,2');
 
 		this.board.setMarkAt(0, 8, 'O');
 		this.board.setStoneAt(0, 7, Color.BLACK); this.board.setMarkAt(0, 7, 'O');
-		this.board.setStoneAt(1, 6, Color.WHITE); this.board.setMarkAt(1, 6, 'O');
+		this.board.setStoneAt(1, 6, Color.WHITE); this.board.setMarkAt(1, 6, 'O:5,8');
 
+		this.board.setStoneAt(2, 4, Color.BLACK); this.board.setMarkAt(2, 4, '+:4,1');
+		this.board.setStoneAt(2, 3, Color.WHITE); this.board.setMarkAt(2, 3, '+');
+		
 		this.renderer.render();
 	}
 

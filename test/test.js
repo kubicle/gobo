@@ -178,6 +178,7 @@ var BoardRenderer = (function () {
     };
     BoardRenderer.prototype.drawGrid = function () {
         this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 1;
         this.ctx.beginPath();
         for (var n = 0; n < this.gobanSize; n++) {
             // Vertical lines
@@ -206,6 +207,7 @@ var BoardRenderer = (function () {
         }
     };
     BoardRenderer.prototype.drawCoordinates = function () {
+        this.ctx.fillStyle = '#000';
         this.ctx.font = this.coordFontSize + "px Arial";
         var letters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
         var distFromVertex = this.stoneRadius + this.gridMargin / 2;
@@ -398,35 +400,48 @@ var BoardRenderer = (function () {
         }
     };
     BoardRenderer.prototype.drawMarkAt = function (x, y, vertex) {
-        switch (vertex.mark) {
+        var ctx = this.ctx;
+        var markAndParams = vertex.mark.split(':');
+        var mark = markAndParams[0];
+        var params = markAndParams.length > 1 ? markAndParams[1].split(',') : [];
+        var size = (parseInt(params[0]) / 10 || 1) * this.markSize;
+        var half = size / 2;
+        var lineWidth = (parseInt(params[1]) || 5) * 0.5;
+        switch (mark) {
             case '[]':
-                this.ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
-                this.ctx.lineWidth = 2.5;
-                this.ctx.strokeRect(x - this.markSize / 2, y - this.markSize / 2, this.markSize, this.markSize);
-                this.ctx.lineWidth = 1;
-                this.ctx.strokeStyle = '#000';
+                ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
+                ctx.lineWidth = lineWidth;
+                ctx.strokeRect(x - half, y - half, size, size);
                 break;
             case 'O':
-                this.ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
-                this.ctx.lineWidth = 2.5;
-                this.ctx.beginPath();
-                this.ctx.arc(x, y, this.markSize / 2, 0, 2 * Math.PI);
-                this.ctx.stroke();
-                this.ctx.lineWidth = 1;
-                this.ctx.strokeStyle = '#000';
+                ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.arc(x, y, half, 0, 2 * Math.PI);
+                ctx.stroke();
                 break;
             case '*':
-                this.ctx.fillStyle = this.prepareForDrawingOver(x, y, vertex);
-                this.ctx.font = (1.5 * this.fontSize) + "px Arial";
-                this.ctx.fillText('*', x, y + this.fontSize * 0.35);
+                ctx.fillStyle = this.prepareForDrawingOver(x, y, vertex);
+                ctx.font = (1.5 * this.fontSize) + "px Arial";
+                ctx.fillText('*', x, y + this.fontSize * 0.35);
+                break;
+            case '+':
+                ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(x - half, y);
+                ctx.lineTo(x + half, y);
+                ctx.moveTo(x, y - half);
+                ctx.lineTo(x, y + half);
+                ctx.stroke();
                 break;
             case '+?':
-                this.ctx.fillStyle = '#888';
-                this.ctx.fillRect(x - this.markSize / 2, y - this.markSize / 2, this.markSize, this.markSize);
+                ctx.fillStyle = '#888';
+                ctx.fillRect(x - half, y - half, size, size);
                 break;
             case '+Bo':
             case '+Wo':
-                this.renderMiniStoneAt(x, y, vertex.mark[1] === 'B' ? 0 /* BLACK */ : 1 /* WHITE */, vertex.stoneColor);
+                this.renderMiniStoneAt(x, y, mark[1] === 'B' ? 0 /* BLACK */ : 1 /* WHITE */, vertex.stoneColor);
                 break;
             default:
                 console.error('Unknown mark type: ' + vertex.mark);
@@ -750,12 +765,16 @@ var GoboTest = (function () {
         this.board.setStoneAt(2, 7, 0 /* BLACK */);
         this.board.setMarkAt(2, 7, '[]');
         this.board.setStoneAt(3, 6, 1 /* WHITE */);
-        this.board.setMarkAt(3, 6, '[]');
+        this.board.setMarkAt(3, 6, '[]:5,2');
         this.board.setMarkAt(0, 8, 'O');
         this.board.setStoneAt(0, 7, 0 /* BLACK */);
         this.board.setMarkAt(0, 7, 'O');
         this.board.setStoneAt(1, 6, 1 /* WHITE */);
-        this.board.setMarkAt(1, 6, 'O');
+        this.board.setMarkAt(1, 6, 'O:5,8');
+        this.board.setStoneAt(2, 4, 0 /* BLACK */);
+        this.board.setMarkAt(2, 4, '+:4,1');
+        this.board.setStoneAt(2, 3, 1 /* WHITE */);
+        this.board.setMarkAt(2, 3, '+');
         this.renderer.render();
     };
     GoboTest.prototype.testFullWhiteBoard = function () {
