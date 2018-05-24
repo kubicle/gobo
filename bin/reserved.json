@@ -3,7 +3,7 @@
   "props": [
     "exports", "inherits",
 
-    "Gobo",
+    "Gobo", "gobo",
     "gobanSize", "widthPx", "heightPx", "marginPx", "noCoords", "background", "backgroundCanvas", "isSketch",
     "pixelToGridCoordinates", "setStoneAt", "setMarkAt", "setLabelAt",
     "render", "getStoneColorAt", "clearVertexAt"
