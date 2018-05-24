@@ -1,0 +1,45 @@
+body {
+    color: #fff;
+    width: 1024px;
+    font-family: "Arial";
+}
+
+.title {
+    font-size: 3em;
+}
+.subtitle {
+    margin: 1em 0 0.2em;
+    font-size: 2em;
+}
+
+.intro {
+    margin: 0.5em 0 0.7em;
+}
+
+.sampleDiv {
+    margin-bottom: 10px;
+}
+
+.boardDiv {
+    display: inline-block;
+}
+
+.codeInText {
+    font-family: 'Courier New', Courier, monospace;
+    white-space: pre;
+    margin: 20px 0 20px 40px;
+}
+
+.textDiv {
+    display: inline-block;
+    vertical-align: top;
+    box-sizing: border-box;
+    width: 512px;
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+.codeSample {
+    white-space: pre;
+    font-family: 'Courier New', Courier, monospace;
+}
