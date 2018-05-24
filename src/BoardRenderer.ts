@@ -513,7 +513,7 @@ class BoardRenderer {
 		const params = markAndParams.length > 1 ? markAndParams[1].split(',') : [];
 		const size = (parseInt(params[0]) / 10 || 1) * this.markSize;
 		const half = size / 2;
-		const lineWidth = (parseInt(params[1]) || 5) * 0.5;
+		const lineWidth = (parseInt(params[1]) || 5) * size / 24;
 		
 		switch (mark) {
 		case '[]':
