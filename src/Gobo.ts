@@ -9,14 +9,16 @@ class Gobo {
 	public canvas: HTMLCanvasElement;
 
 	constructor(options:{
-		gobanSize:number,
+		gobanSize?:number,
 		widthPx:number,
 		heightPx?:number,
 		marginPx?:number,
 		isSketch?:boolean,
 		noCoords?:boolean,
 		backgroundCanvas?:HTMLCanvasElement,
-		background?:string
+		background?:string,
+		patternSeed?:number,
+		pixelRatio?:number
 	}) {
 		this.board = new LogicalBoard(options.gobanSize || 19);
 		this.renderer = new BoardRenderer(options);

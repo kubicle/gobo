@@ -115,7 +115,6 @@ function drawWood(canvas) {
 	}
 }
 
-exports.paintCanvas = function (canvas, randomSeed) {
-	cheapSeed.setRandomSeed(randomSeed);
+exports.paintCanvas = function (canvas) {
 	drawWood(canvas);
 };
