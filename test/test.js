@@ -9,15 +9,20 @@ function addIntro() {
     newDiv(document.body, 'codeInText', "<script src='../bin/gobo.js'></script>");
     newDiv(document.body, 'intro', "then you can simply do:");
     newDiv(document.body, 'codeInText', "var Gobo = window['gobo'].Gobo;");
-    newDiv(document.body, 'intro', "...but you could of course load gobo differently.\nFor example in TypeScript you can simply import Gobo.\n\nAll examples below suppose the following constants are declared:");
+    newDiv(document.body, 'intro', "...but you could of course load gobo differently.\n" +
+        "For example in TypeScript you can simply import Gobo.\n\n" +
+        "All examples below suppose the following constants are declared:");
     newDiv(document.body, 'codeInText', "var BLACK = 0, WHITE = 1, EMPTY = -1;");
+    newDiv(document.body, 'intro', "For neat rendering on \"retina\" displays (when window.devicePixelRatio > 1),\n" +
+        "you should pass pixelRatio to your Gobo object:");
+    newDiv(document.body, 'codeInText', "new Gobo({ pixelRatio: window.devicePixelRatio,... })");
 }
 /**
  * A very simple example to start from.
  */
 function basicTest() {
     var width = 300;
-    var gobo = new Gobo({ gobanSize: 5, widthPx: width, background: '#ea8' });
+    var gobo = newGobo({ gobanSize: 5, widthPx: width, background: '#ea8' });
     gobo.setStoneAt(2, 1, WHITE);
     gobo.setStoneAt(2, 3, BLACK);
     gobo.setStoneAt(3, 1, WHITE);
@@ -30,12 +35,13 @@ function basicTest() {
  */
 function testManyRenderings() {
     var width = 512;
-    var gobo = new Gobo({ widthPx: width, background: 'wood', patternSeed: 0.4174168424973104 });
+    var gobo = newGobo({ widthPx: width, background: 'wood', patternSeed: 0.4174168424973104 });
     var code = "var gobo = new Gobo({\n    widthPx: 512,\n    background: 'wood',\n    patternSeed: 0.4174168424973104 // for random patterns of wood & stones (0 < seed < 1)\n});\n\naddStoneAndRender(gobo, 1000);\n\nfunction addStoneAndRender(gobo, count) {\n    if (!count) return; // finished\n    gobo.setStoneAt(~~(Math.random() * 19), ~~(Math.random() * 19), Math.random() < 0.5 ? 0 : 1);\n    gobo.render();\n    setTimeout(addStoneAndRender, 0, gobo, count - 1);\n}";
     var textDiv = createSample(width, gobo.canvas, 'Performance Test', '1,000 "render" operations (full board is redrawn).', code).textDiv;
     var t0 = Date.now();
     addStoneAndRender(gobo, 1000, function () {
-        textDiv.innerText = code + ("\n\n=> " + (Date.now() - t0) + "ms");
+        var perRedraw = Math.round((Date.now() - t0) / 100) / 10;
+        textDiv.innerText = code + ("\n\n=> " + perRedraw + "ms per redraw");
     });
 }
 function addStoneAndRender(gobo, count, cb) {
@@ -50,7 +56,7 @@ function addStoneAndRender(gobo, count, cb) {
  */
 function testLabelsAndMarks() {
     var width = 350;
-    var gobo = new Gobo({ gobanSize: 7, isSketch: true, widthPx: width, background: '#dcb' });
+    var gobo = newGobo({ gobanSize: 7, isSketch: true, widthPx: width, background: '#dcb' });
     gobo.setMarkAt(0, 1, 'O');
     gobo.setStoneAt(0, 0, BLACK);
     gobo.setMarkAt(0, 0, 'O');
@@ -88,7 +94,7 @@ function testCustomBackground() {
     var woodExample = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACKUlEQVQ4T7WUXXLcMAyDQVKyszl1TtBr9g5ekeqAkvyTZvpW58UzO4E/EgDl96+vXovhVQoCHW8PHO+G6IHNCqwoPDo8Any2YvluIthLQYuO5oGiAhGB/D/BWhB9EjZHhCeNqcI7EEH+b4RW0PokNEH+PQgpGIHjFCxTsKcgH66H78qRT0GHmUJFb4IkjEvQw3NHJgrHFBSgmsE9oKop6D3Q3FFMIbgL0pQOvKPhaJEUW1GYGrw/CS/BsY40hSNfpig+a03H6PLbPb/8oQoxy93eR6Ygd7uRNvfuqEUh/dyh4lVqEh7eUrT3yPFMJSkYFZk7PAUzQlyTo5oCy5TNFK9tELZlSnfsqtBSzhwuwWXKNn9LwvsOGY8P/pguO97cYQ/sdG7u8EE4g/1vwTpI+LUxMnNYMgrLFBKW1RQVbHpBbKrAig3/cRAOMYr23nPpIpqVZIzo4ooNY5LvE4L55Acz2DlyEkaOe4QDS1AlzaIRolcOi2qG/BTMHU6X9xSsSdfCcfgQ3M0A1YwNCTk+ydJlkzweS5BQfJKQjSAhDWFIx8jAXsZeUpCEbAqpVg5vhH8J7tUyMkMw0GdTREew0+Vb9Xi+0uUZ7CG4Rq6WvXWfsXHGxnPkR2yWIGPDpsxIjabY1RR2ljuk4NghuzyOA4/AT11mg3KHM7t0/Kzej8GmIAnnRXl0OYOteTw8eFAclb1f1yarx+OQx3IRPq/N9y6P8zWuzVU9wR9BRU5H3DbiDgAAAABJRU5ErkJggg==';
     var code = "var gobo = new Gobo({\n\tbackgroundCanvas: canvas,\n\tnoCoords: true, // turn off coordinates\n\tgobanSize: 7,\n\twidthPx: 350\n});\n\ngobo.setStoneAt(3, 3, WHITE);\n\ngobo.render();";
     var canvas = loadImage(woodExample, function () {
-        var gobo = new Gobo({ gobanSize: 7, widthPx: width, backgroundCanvas: canvas, noCoords: true });
+        var gobo = newGobo({ gobanSize: 7, widthPx: width, backgroundCanvas: canvas, noCoords: true });
         gobo.setStoneAt(3, 3, WHITE);
         gobo.render();
         createSample(width, gobo.canvas, 'Custom Background', 'You can use your own image as background (some look better than others).', code);
@@ -113,7 +119,7 @@ function loadImage(image, cb) {
  */
 function testFullWhiteBoard() {
     var width = 512, gobanSize = 13;
-    var gobo = new Gobo({ gobanSize: gobanSize, widthPx: width, background: 'wood' });
+    var gobo = newGobo({ gobanSize: gobanSize, widthPx: width, background: 'wood' });
     for (var j = 0; j < gobanSize; j++) {
         for (var i = 0; i < gobanSize; i++) {
             gobo.setStoneAt(i, j, WHITE);
@@ -124,6 +130,11 @@ function testFullWhiteBoard() {
     createSample(width, gobo.canvas, 'Full White Board', 'Test used to gauge if white stones look "different enough" to a human eye.', code);
 }
 //---
+function newGobo(options) {
+    // Always set pixelRatio here - not mentioned in each example to keep it short.
+    options.pixelRatio = window.devicePixelRatio;
+    return new Gobo(options);
+}
 function createSample(width, canvas, title, intro, code) {
     if (title)
         newDiv(document.body, 'subtitle', title);

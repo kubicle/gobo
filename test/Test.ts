@@ -8,17 +8,17 @@ function addIntro() {
 	newDiv(document.body, 'title', 'gobo Tests & Samples');
 	newDiv(document.body, 'subtitle', 'General Remarks');
 	newDiv(document.body, 'intro', 
-`These samples are given in JavaScript for the wider audience.
-This html page contains a tag:`);
+		`These samples are given in JavaScript for the wider audience.\nThis html page contains a tag:`);
 	newDiv(document.body, 'codeInText', `<script src='../bin/gobo.js'></script>`);
 	newDiv(document.body, 'intro', `then you can simply do:`);
 	newDiv(document.body, 'codeInText', `var Gobo = window['gobo'].Gobo;`);
-	newDiv(document.body, 'intro',
-`...but you could of course load gobo differently.
-For example in TypeScript you can simply import Gobo.
-
-All examples below suppose the following constants are declared:`);
+	newDiv(document.body, 'intro', `...but you could of course load gobo differently.\n` +
+		`For example in TypeScript you can simply import Gobo.\n\n` +
+		`All examples below suppose the following constants are declared:`);
 	newDiv(document.body, 'codeInText', `var BLACK = 0, WHITE = 1, EMPTY = -1;`);
+	newDiv(document.body, 'intro', `For neat rendering on "retina" displays (when window.devicePixelRatio > 1),\n` +
+		`you should pass pixelRatio to your Gobo object:`);
+	newDiv(document.body, 'codeInText', `new Gobo({ pixelRatio: window.devicePixelRatio,... })`);
 }
 
 /**
@@ -27,7 +27,7 @@ All examples below suppose the following constants are declared:`);
 function basicTest() {
 	const width = 300;
 
-	const gobo = new Gobo({ gobanSize: 5, widthPx: width, background: '#ea8' });
+	const gobo = newGobo({ gobanSize: 5, widthPx: width, background: '#ea8' });
 
 	gobo.setStoneAt(2, 1, WHITE);
 	gobo.setStoneAt(2, 3, BLACK);
@@ -59,7 +59,7 @@ gobo.render();`);
 function testManyRenderings() {
 	const width = 512;
 
-	const gobo = new Gobo({ widthPx: width, background: 'wood', patternSeed: 0.4174168424973104 });
+	const gobo = newGobo({ widthPx: width, background: 'wood', patternSeed: 0.4174168424973104 });
 
 	const code =
 `var gobo = new Gobo({
@@ -85,7 +85,8 @@ function addStoneAndRender(gobo, count) {
 	const t0 = Date.now();
 
 	addStoneAndRender(gobo, 1000, () => {
-		textDiv.innerText = code + `\n\n=> ${Date.now() - t0}ms`;
+		const perRedraw = Math.round((Date.now() - t0) / 100) / 10;
+		textDiv.innerText = code + `\n\n=> ${perRedraw}ms per redraw`;
 	});
 }
 
@@ -105,7 +106,7 @@ function addStoneAndRender(gobo:any, count:number, cb:()=>void) {
 function testLabelsAndMarks() {
 	const width = 350;
 
-	const gobo = new Gobo({ gobanSize: 7, isSketch: true, widthPx: width, background: '#dcb' });
+	const gobo = newGobo({ gobanSize: 7, isSketch: true, widthPx: width, background: '#dcb' });
 
 	gobo.setMarkAt(0, 1, 'O');
 	gobo.setStoneAt(0, 0, BLACK); gobo.setMarkAt(0, 0, 'O');
@@ -175,7 +176,7 @@ gobo.setStoneAt(3, 3, WHITE);
 gobo.render();`;
 
 	const canvas = loadImage(woodExample, () => {
-		const gobo = new Gobo({ gobanSize: 7, widthPx: width, backgroundCanvas: canvas, noCoords: true });
+		const gobo = newGobo({ gobanSize: 7, widthPx: width, backgroundCanvas: canvas, noCoords: true });
 		gobo.setStoneAt(3, 3, WHITE);
 		gobo.render();
 
@@ -205,7 +206,7 @@ function loadImage(image:string, cb:()=>void) {
  */
 function testFullWhiteBoard() {
 	const width = 512, gobanSize = 13;
-	const gobo = new Gobo({ gobanSize: gobanSize, widthPx: width, background: 'wood' });
+	const gobo = newGobo({ gobanSize: gobanSize, widthPx: width, background: 'wood' });
 
 	for (let j = 0; j < gobanSize; j++) {
 		for (let i = 0; i < gobanSize; i++) {
@@ -236,6 +237,13 @@ gobo.render();`;
 }
 
 //---
+
+function newGobo(options:any) {
+	// Always set pixelRatio here - not mentioned in each example to keep it short.
+	options.pixelRatio = window.devicePixelRatio;
+
+	return new Gobo(options);
+}
 
 function createSample(width:number, canvas:HTMLCanvasElement,
 	title:string, intro:string, code:string) : {boardDiv:HTMLDivElement, textDiv:HTMLDivElement} {
