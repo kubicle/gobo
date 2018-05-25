@@ -81,7 +81,7 @@ class BoardRenderer {
 		patternSeed?:number,
 		pixelRatio?:number
 	}) {
-		this.pixelRatio = options.pixelRatio || 1;
+		this.pixelRatio = Math.max(1, options.pixelRatio || 1);
 		this.width = options.widthPx * this.pixelRatio;
 		this.height = (options.heightPx || options.widthPx) * this.pixelRatio;
 		if (!options.widthPx) {

@@ -28,7 +28,7 @@ var SHELL_LINE_ALPHA_MIN = 0; // 0.2 make the line quite "grey"; 0.05 makes it v
 var SHELL_LINE_ALPHA_MAX = 0.15;
 var BoardRenderer = (function () {
     function BoardRenderer(options) {
-        this.pixelRatio = options.pixelRatio || 1;
+        this.pixelRatio = Math.max(1, options.pixelRatio || 1);
         this.width = options.widthPx * this.pixelRatio;
         this.height = (options.heightPx || options.widthPx) * this.pixelRatio;
         if (!options.widthPx) {
