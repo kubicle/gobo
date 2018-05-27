@@ -28,8 +28,8 @@ body {
 
 .codeInText {
     font-family: 'Courier New', Courier, monospace;
-    font-size: 1rem;
-    white-space: pre;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
     margin: 20px 0 20px 40px;
 }
 
@@ -43,6 +43,6 @@ body {
 }
 
 .codeSample {
-    white-space: pre;
+    white-space: pre-wrap;
     font-family: 'Courier New', Courier, monospace;
 }
