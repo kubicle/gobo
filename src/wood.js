@@ -1,4 +1,5 @@
 var cheapSeed = require('./cheapSeed');
+var setRandomSeed = cheapSeed.setRandomSeed;
 var random = cheapSeed.pseudoRandom;
 var randomBetween = cheapSeed.pseudoRandomBetween;
 
@@ -92,14 +93,18 @@ function buildLineColors(lineCount) {
 	return lineColors;
 }
 
-function drawWood(canvas) {
+function drawWood(canvas, colorSeed, patternSeed) {
+	setRandomSeed(patternSeed);
 	averageLineWidth = randomBetween(1.2, 2.4);
 	maxDeviation = randomBetween(1, 2.5) * averageLineWidth;
-
 	var lineDeltas = [];
 	var initLineWidths = buildLineWidths(canvas.width, lineDeltas);
 	var lineCount = initLineWidths.length;
+
+	setRandomSeed(colorSeed);
 	var initLineColors = buildLineColors(lineCount);
+
+	setRandomSeed(patternSeed);
 	var lineWidths = initLineWidths.concat();
 	var ctx = canvas.getContext('2d');
 
@@ -115,6 +120,13 @@ function drawWood(canvas) {
 	}
 }
 
-exports.paintCanvas = function (canvas) {
-	drawWood(canvas);
+/**
+ * Paints a canvas with a wood texture.
+ *
+ * @param {HTMLCanvasElement} canvas 
+ * @param {number} colorSeed - numberbetween 0 and 1
+ * @param {number} patternSeed - numberbetween 0 and 1
+ */
+exports.paintCanvas = function (canvas, colorSeed, patternSeed) {
+	drawWood(canvas, colorSeed, patternSeed);
 };

@@ -1,4 +1,6 @@
 # gobo
+## 0.4.2
+- patternSeed is used for patterns and colors so color is independent from board size.
 ## 0.4.1
 - Ignores "pixelRatio" < 1 (pass a smaller withPx if you wanted a smaller canvas).
 ## 0.4.0

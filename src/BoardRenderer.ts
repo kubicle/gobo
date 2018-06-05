@@ -102,11 +102,8 @@ class BoardRenderer {
 		this.logicalBoard = logicalBoard;
 		this.computeDimensions();
 
-		if (!this.isSketch) {
-			setRandomSeed(this.patternSeed);
-			this.prepareStonePatterns();
-		}
-		setRandomSeed(this.patternSeed);
+		if (!this.isSketch) this.prepareStonePatterns();
+
 		this.createMainCanvas();
 		this.prepareBackground();
 
@@ -190,11 +187,12 @@ class BoardRenderer {
 			if (this.isSketch || this.backgroundCanvas) return; // ignore if canvas is passed or sketch mode
 			var canvas = this.backgroundCanvas = document.createElement('canvas');
 			canvas.width = canvas.height = 200 * this.pixelRatio;
-			paintCanvas(canvas);
+			paintCanvas(canvas, this.patternSeed, this.patternSeed);
 		}
 	}
 
 	private prepareStonePatterns() {
+		setRandomSeed(this.patternSeed);
 		const size = this.vertexSize;
 		const center = size / 2;
 
