@@ -93,9 +93,9 @@ function buildLineColors(lineCount) {
 	return lineColors;
 }
 
-function drawWood(canvas, colorSeed, patternSeed) {
+function drawWood(canvas, colorSeed, patternSeed, pixelRatio) {
 	setRandomSeed(patternSeed);
-	averageLineWidth = randomBetween(1.2, 2.4);
+	averageLineWidth = randomBetween(1.2, 2.4) * pixelRatio;
 	maxDeviation = randomBetween(1, 2.5) * averageLineWidth;
 	var lineDeltas = [];
 	var initLineWidths = buildLineWidths(canvas.width, lineDeltas);
@@ -126,7 +126,8 @@ function drawWood(canvas, colorSeed, patternSeed) {
  * @param {HTMLCanvasElement} canvas 
  * @param {number} colorSeed - numberbetween 0 and 1
  * @param {number} patternSeed - numberbetween 0 and 1
+ * @param {number} pixelRatio - e.g. 1, 2, 3...
  */
-exports.paintCanvas = function (canvas, colorSeed, patternSeed) {
-	drawWood(canvas, colorSeed, patternSeed);
+exports.paintCanvas = function (canvas, colorSeed, patternSeed, pixelRatio) {
+	drawWood(canvas, colorSeed, patternSeed, pixelRatio);
 };

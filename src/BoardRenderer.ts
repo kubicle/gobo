@@ -215,7 +215,7 @@ class BoardRenderer {
 			if (this.isSketch || this.backgroundCanvas) return; // ignore if canvas is passed or sketch mode
 			var canvas = this.backgroundCanvas = document.createElement('canvas');
 			canvas.width = canvas.height = 200 * this.pixelRatio;
-			paintCanvas(canvas, this.patternSeed, this.patternSeed);
+			paintCanvas(canvas, this.patternSeed, this.patternSeed, this.pixelRatio);
 		}
 	}
 
@@ -458,7 +458,7 @@ class BoardRenderer {
 		this.drawLightReflexion(x, y, radius, '#fff', '#aaa', 0.33, 1);
 		const shellLines = SHELL_LINES[~~(pseudoRandom() * 3)];
 		const angle = pseudoRandom() * 2 * Math.PI;
-		const thickness = 1 + pseudoRandom() * 1.5;
+		const thickness = (1 + pseudoRandom() * 1.5) * this.pixelRatio;
 		const factor =  0.2 + pseudoRandom() * 0.3; // 0: lines are straight; 0.9: lines are very curvy
 		this.drawShell(x, y, radius, angle, shellLines, factor, thickness);
 	}
