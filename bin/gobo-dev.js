@@ -29,27 +29,47 @@ var SHELL_LINE_ALPHA_MAX = 0.15;
 var BoardRenderer = (function () {
     function BoardRenderer(options) {
         this.pixelRatio = Math.max(1, options.pixelRatio || 1);
-        this.width = options.widthPx * this.pixelRatio;
-        this.height = (options.heightPx || options.widthPx) * this.pixelRatio;
-        if (!options.widthPx) {
-            console.error('Invalid gobo widthPx: ' + options.widthPx);
-            this.width = this.height = 100;
-        }
         this.isSketch = !!options.isSketch;
         this.withCoords = !options.noCoords;
         this.gridExtraMargin = (options.marginPx || DEFAULT_MARGIN_PX) * this.pixelRatio;
         this.backgroundCanvas = options.backgroundCanvas;
         this.background = options.background;
         this.patternSeed = options.patternSeed || Math.random();
+        this.setSize(options.widthPx, options.heightPx);
     }
+    BoardRenderer.prototype.setSize = function (widthPx, heightPx) {
+        if (!widthPx) {
+            console.error('Invalid gobo widthPx: ' + widthPx);
+            widthPx = 100;
+        }
+        var width = widthPx * this.pixelRatio;
+        var height = (heightPx || widthPx) * this.pixelRatio;
+        if (width === this.width && height === this.height)
+            return false; // unchanged
+        this.width = width;
+        this.height = height;
+        return true; // changed
+    };
     BoardRenderer.prototype.prepare = function (logicalBoard) {
         this.logicalBoard = logicalBoard;
         this.computeDimensions();
         if (!this.isSketch)
             this.prepareStonePatterns();
-        this.createMainCanvas();
         this.prepareBackground();
+        this.createMainCanvas();
+        this.useMainCanvas();
         return this.canvas;
+    };
+    // NB: this clears canvas' content so one has to call render too
+    BoardRenderer.prototype.resize = function (widthPx, heightPx) {
+        if (!this.setSize(widthPx, heightPx))
+            return;
+        this.computeDimensions();
+        if (!this.isSketch)
+            this.prepareStonePatterns();
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.useMainCanvas();
     };
     BoardRenderer.prototype.render = function () {
         this.drawBackground();
@@ -63,11 +83,16 @@ var BoardRenderer = (function () {
         return this.canvas;
     };
     BoardRenderer.prototype.createMainCanvas = function () {
-        this.canvas = this.createCanvas(this.width, this.height);
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+    };
+    BoardRenderer.prototype.useMainCanvas = function () {
+        this.ctx = this.canvas.getContext('2d');
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
     };
-    BoardRenderer.prototype.createCanvas = function (width, height) {
+    BoardRenderer.prototype.createAndUseCanvas = function (width, height) {
         var canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -125,23 +150,23 @@ var BoardRenderer = (function () {
                 return; // ignore if canvas is passed or sketch mode
             var canvas = this.backgroundCanvas = document.createElement('canvas');
             canvas.width = canvas.height = 200 * this.pixelRatio;
-            wood_js_1.paintCanvas(canvas, this.patternSeed, this.patternSeed);
+            wood_js_1.paintCanvas(canvas, this.patternSeed, this.patternSeed, this.pixelRatio);
         }
     };
     BoardRenderer.prototype.prepareStonePatterns = function () {
         cheapSeed_1.setRandomSeed(this.patternSeed);
         var size = this.vertexSize;
         var center = size / 2;
-        this.stoneShadow = this.createCanvas(size, size);
+        this.stoneShadow = this.createAndUseCanvas(size, size);
         this.drawStoneShadow(center, center);
         this.slateStones = [];
         for (var i = SLATE_STONE_COUNT - 1; i >= 0; i--) {
-            this.slateStones.push(this.createCanvas(size, size));
+            this.slateStones.push(this.createAndUseCanvas(size, size));
             this.drawSlateStone(center, center, this.stoneRadius);
         }
         this.shellStones = [];
         for (var i = 9 * SHELL_3x3GRID_COUNT - 1; i >= 0; i--) {
-            this.shellStones.push(this.createCanvas(size, size));
+            this.shellStones.push(this.createAndUseCanvas(size, size));
             this.drawShellStone(center, center, this.stoneRadius);
         }
         // So that each "repaint" shows the same pattern for a given stone position, pre-decides pattern indexes
@@ -162,9 +187,9 @@ var BoardRenderer = (function () {
                 row.push(index);
             }
         }
-        this.miniShell = this.createCanvas(size, size);
+        this.miniShell = this.createAndUseCanvas(size, size);
         this.drawShellStone(center, center, this.stoneRadius / 2);
-        this.miniSlate = this.createCanvas(size, size);
+        this.miniSlate = this.createAndUseCanvas(size, size);
         this.drawSlateStone(center, center, this.stoneRadius / 2);
     };
     BoardRenderer.prototype.setBackgroundFillStyle = function () {
@@ -339,7 +364,7 @@ var BoardRenderer = (function () {
         this.drawLightReflexion(x, y, radius, '#fff', '#aaa', 0.33, 1);
         var shellLines = SHELL_LINES[~~(cheapSeed_1.pseudoRandom() * 3)];
         var angle = cheapSeed_1.pseudoRandom() * 2 * Math.PI;
-        var thickness = 1 + cheapSeed_1.pseudoRandom() * 1.5;
+        var thickness = (1 + cheapSeed_1.pseudoRandom() * 1.5) * this.pixelRatio;
         var factor = 0.2 + cheapSeed_1.pseudoRandom() * 0.3; // 0: lines are straight; 0.9: lines are very curvy
         this.drawShell(x, y, radius, angle, shellLines, factor, thickness);
     };
@@ -477,6 +502,9 @@ var Gobo = (function () {
         this.renderer = new BoardRenderer_1.BoardRenderer(options);
         this.canvas = this.renderer.prepare(this.board);
     }
+    Gobo.prototype.resize = function (widthPx, heightPx) {
+        this.renderer.resize(widthPx, heightPx);
+    };
     Gobo.prototype.render = function () {
         this.renderer.render();
     };
@@ -685,9 +713,9 @@ function buildLineColors(lineCount) {
     }
     return lineColors;
 }
-function drawWood(canvas, colorSeed, patternSeed) {
+function drawWood(canvas, colorSeed, patternSeed, pixelRatio) {
     setRandomSeed(patternSeed);
-    averageLineWidth = randomBetween(1.2, 2.4);
+    averageLineWidth = randomBetween(1.2, 2.4) * pixelRatio;
     maxDeviation = randomBetween(1, 2.5) * averageLineWidth;
     var lineDeltas = [];
     var initLineWidths = buildLineWidths(canvas.width, lineDeltas);
@@ -714,9 +742,10 @@ function drawWood(canvas, colorSeed, patternSeed) {
  * @param {HTMLCanvasElement} canvas
  * @param {number} colorSeed - numberbetween 0 and 1
  * @param {number} patternSeed - numberbetween 0 and 1
+ * @param {number} pixelRatio - e.g. 1, 2, 3...
  */
-exports.paintCanvas = function (canvas, colorSeed, patternSeed) {
-    drawWood(canvas, colorSeed, patternSeed);
+exports.paintCanvas = function (canvas, colorSeed, patternSeed, pixelRatio) {
+    drawWood(canvas, colorSeed, patternSeed, pixelRatio);
 };
 
 },{"./cheapSeed":5}]},{},[2])(2)

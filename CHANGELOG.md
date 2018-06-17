@@ -1,4 +1,7 @@
 # gobo
+## 0.5.0
+- New method resize (call render again to get new image).
+- Background & stone patterns use pixelRatio too (faster prepare + coherent look).
 ## 0.4.2
 - patternSeed is used for patterns and colors so color is independent from board size.
 ## 0.4.1
