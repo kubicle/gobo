@@ -25,6 +25,10 @@ class Gobo {
 		this.canvas = this.renderer.prepare(this.board);
 	}
 
+	public resize(widthPx:number, heightPx?: number) {
+		this.renderer.resize(widthPx, heightPx);
+	}
+
 	public render() {
 		this.renderer.render();
 	}

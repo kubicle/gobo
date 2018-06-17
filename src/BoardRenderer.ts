@@ -82,12 +82,6 @@ class BoardRenderer {
 		pixelRatio?:number
 	}) {
 		this.pixelRatio = Math.max(1, options.pixelRatio || 1);
-		this.width = options.widthPx * this.pixelRatio;
-		this.height = (options.heightPx || options.widthPx) * this.pixelRatio;
-		if (!options.widthPx) {
-			console.error('Invalid gobo widthPx: ' + options.widthPx);
-			this.width = this.height = 100;
-		}
 
 		this.isSketch = !!options.isSketch;
 		this.withCoords = !options.noCoords;
@@ -96,6 +90,22 @@ class BoardRenderer {
 		this.backgroundCanvas = options.backgroundCanvas;
 		this.background = options.background;
 		this.patternSeed = options.patternSeed || Math.random();
+
+		this.setSize(options.widthPx, options.heightPx);
+	}
+
+	private setSize(widthPx:number, heightPx?: number) :boolean {
+		if (!widthPx) {
+			console.error('Invalid gobo widthPx: ' + widthPx);
+			widthPx = 100;
+		}
+		const width = widthPx * this.pixelRatio;
+		const height = (heightPx || widthPx) * this.pixelRatio;
+		if (width === this.width && height === this.height) return false; // unchanged
+
+		this.width = width;
+		this.height = height;
+		return true; // changed
 	}
 
 	public prepare(logicalBoard:LogicalBoard) :HTMLCanvasElement {
@@ -103,11 +113,23 @@ class BoardRenderer {
 		this.computeDimensions();
 
 		if (!this.isSketch) this.prepareStonePatterns();
-
-		this.createMainCanvas();
 		this.prepareBackground();
 
+		this.createMainCanvas();
+		this.useMainCanvas();
 		return this.canvas;
+	}
+
+	// NB: this clears canvas' content so one has to call render too
+	public resize(widthPx:number, heightPx?: number) {
+		if (!this.setSize(widthPx, heightPx)) return;
+
+		this.computeDimensions();
+		if (!this.isSketch) this.prepareStonePatterns();
+		this.canvas.width = this.width;
+		this.canvas.height = this.height;
+
+		this.useMainCanvas();
 	}
 
 	public render() {
@@ -123,12 +145,18 @@ class BoardRenderer {
 	}
 
 	private createMainCanvas() {
-		this.canvas = this.createCanvas(this.width, this.height);
+		this.canvas = document.createElement('canvas');
+		this.canvas.width = this.width;
+		this.canvas.height = this.height;
+	}
+
+	private useMainCanvas() {
+		this.ctx = this.canvas.getContext('2d');
 		this.ctx.textAlign = 'center';
 		this.ctx.textBaseline = 'middle';
 	}
 
-	private createCanvas(width:number, height:number) {
+	private createAndUseCanvas(width:number, height:number) {
 		const canvas = document.createElement('canvas');
 		canvas.width = width;
 		canvas.height = height;
@@ -196,17 +224,17 @@ class BoardRenderer {
 		const size = this.vertexSize;
 		const center = size / 2;
 
-		this.stoneShadow = this.createCanvas(size, size);
+		this.stoneShadow = this.createAndUseCanvas(size, size);
 		this.drawStoneShadow(center, center);
 
 		this.slateStones = [];
 		for (let i = SLATE_STONE_COUNT - 1; i >= 0; i--) {
-			this.slateStones.push(this.createCanvas(size, size));
+			this.slateStones.push(this.createAndUseCanvas(size, size));
 			this.drawSlateStone(center, center, this.stoneRadius);
 		}
 		this.shellStones = [];
 		for (let i = 9 * SHELL_3x3GRID_COUNT - 1; i >= 0; i--) {
-			this.shellStones.push(this.createCanvas(size, size));
+			this.shellStones.push(this.createAndUseCanvas(size, size));
 			this.drawShellStone(center, center, this.stoneRadius);
 		}
 
@@ -229,9 +257,9 @@ class BoardRenderer {
 			}
 		}
 
-		this.miniShell = this.createCanvas(size, size);
+		this.miniShell = this.createAndUseCanvas(size, size);
 		this.drawShellStone(center, center, this.stoneRadius / 2);
-		this.miniSlate = this.createCanvas(size, size);
+		this.miniSlate = this.createAndUseCanvas(size, size);
 		this.drawSlateStone(center, center, this.stoneRadius / 2);
 	}
 
