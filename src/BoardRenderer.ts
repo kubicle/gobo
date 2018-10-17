@@ -116,7 +116,6 @@ class BoardRenderer {
 		this.prepareBackground();
 
 		this.createMainCanvas();
-		this.useMainCanvas();
 		return this.canvas;
 	}
 
@@ -128,11 +127,10 @@ class BoardRenderer {
 		if (!this.isSketch) this.prepareStonePatterns();
 		this.canvas.width = this.width;
 		this.canvas.height = this.height;
-
-		this.useMainCanvas();
 	}
 
 	public render() {
+		this.useMainCanvas();
 		this.drawBackground();
 		this.drawGrid();
 		this.drawStarPoints();

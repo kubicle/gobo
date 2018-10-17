@@ -1,4 +1,6 @@
 # gobo
+## 0.5.1
+- Fix: in rare cases (long inaction in browser?) main canvas had its context / text alignment reset.
 ## 0.5.0
 - New method resize (call render again to get new image).
 - Background & stone patterns use pixelRatio too (faster prepare + coherent look).
