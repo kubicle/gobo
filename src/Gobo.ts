@@ -26,36 +26,36 @@ class Gobo {
 	}
 
 	public resize(widthPx:number, heightPx?: number) {
-		this.renderer.resize(widthPx, heightPx);
+		this.renderer.resizeBoard(widthPx, heightPx);
 	}
 
 	public render() {
-		this.renderer.render();
+		this.renderer.renderAll();
 	}
 
 	public setStoneAt(i:number, j:number, color:Color) {
-		this.board.setStoneAt(i, j, color);
+		this.board.setStone(i, j, color);
 	}
 
 	public clearVertexAt(i:number, j:number) {
-		this.board.clearVertexAt(i, j);
+		this.board.clearVertex(i, j);
 	}
 
 	public getStoneColorAt(i:number, j:number) :Color {
-		return this.board.getVertexAt(i, j).stoneColor;
+		return this.board.getVertex(i, j).stoneColor;
 	}
 
 	public setLabelAt(i:number, j:number, label:string, style?:string) {
-		this.board.setLabelAt(i, j, label, style);
+		this.board.setLabel(i, j, label, style);
 	}
 
 	public setMarkAt(i:number, j:number, mark:string) {
-		this.board.setMarkAt(i, j, mark);
+		this.board.setMark(i, j, mark);
 	}
 
 	// Converts canvas to Gobo coordinates
 	public pixelToGridCoordinates(x:number, y:number) :number[] {
-		return this.renderer.pixelToGridCoordinates(x, y);
+		return this.renderer.pixelToGridCoords(x, y);
 	}
 }
 

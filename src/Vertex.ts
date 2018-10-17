@@ -13,10 +13,10 @@ class Vertex {
 	style: string; // e.g. '#f00' for red color
 
 	constructor() {
-		this.clear();
+		this.clearVertex();
 	}
 
-	clear() {
+	clearVertex() {
 		this.stoneColor = Color.EMPTY;
 		this.label = '';
 		this.mark = '';

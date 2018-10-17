@@ -35,22 +35,22 @@ const SHELL_LINE_ALPHA_MAX = 0.15;
 class BoardRenderer {
 	logicalBoard: LogicalBoard;
 
-	canvas: HTMLCanvasElement;
+	mainCanvas: HTMLCanvasElement;
 	ctx: CanvasRenderingContext2D;
-	pixelRatio: number;
-	width: number;
-	height: number;
-	gobanSize: number;
-	isSketch: boolean;
+	pxRatio: number;
+	boardWidth: number; // in logical pixels
+	boardHeight: number;
+	boardSize: number; // in stones
+	onlySketch: boolean; // true for simplified rendering
 
 	gridMargin: number;
 	gridExtraMargin: number;
-	patternSeed: number; // as provided in options
-	background: string; // as provided in options
-	backgroundColor: string;
-	backgroundCanvas: HTMLCanvasElement;
-	fontSize: number;
-	coordFontSize: number;
+	randomSeed: number; // as provided in options
+	bgOption: string; // as provided in options
+	bgColorRgb: string;
+	bgCanvas: HTMLCanvasElement;
+	fontPx: number;
+	coordFontPx: number;
 	withCoords: boolean;
 
 	vertexSize: number;
@@ -81,15 +81,15 @@ class BoardRenderer {
 		patternSeed?:number,
 		pixelRatio?:number
 	}) {
-		this.pixelRatio = Math.max(1, options.pixelRatio || 1);
+		this.pxRatio = Math.max(1, options.pixelRatio || 1);
 
-		this.isSketch = !!options.isSketch;
+		this.onlySketch = !!options.isSketch;
 		this.withCoords = !options.noCoords;
-		this.gridExtraMargin = (options.marginPx || DEFAULT_MARGIN_PX) * this.pixelRatio;
+		this.gridExtraMargin = (options.marginPx || DEFAULT_MARGIN_PX) * this.pxRatio;
 
-		this.backgroundCanvas = options.backgroundCanvas;
-		this.background = options.background;
-		this.patternSeed = options.patternSeed || Math.random();
+		this.bgCanvas = options.backgroundCanvas;
+		this.bgOption = options.background;
+		this.randomSeed = options.patternSeed || Math.random();
 
 		this.setSize(options.widthPx, options.heightPx);
 	}
@@ -99,12 +99,12 @@ class BoardRenderer {
 			console.error('Invalid gobo widthPx: ' + widthPx);
 			widthPx = 100;
 		}
-		const width = widthPx * this.pixelRatio;
-		const height = (heightPx || widthPx) * this.pixelRatio;
-		if (width === this.width && height === this.height) return false; // unchanged
+		const width = widthPx * this.pxRatio;
+		const height = (heightPx || widthPx) * this.pxRatio;
+		if (width === this.boardWidth && height === this.boardHeight) return false; // unchanged
 
-		this.width = width;
-		this.height = height;
+		this.boardWidth = width;
+		this.boardHeight = height;
 		return true; // changed
 	}
 
@@ -112,24 +112,24 @@ class BoardRenderer {
 		this.logicalBoard = logicalBoard;
 		this.computeDimensions();
 
-		if (!this.isSketch) this.prepareStonePatterns();
+		if (!this.onlySketch) this.prepareStonePatterns();
 		this.prepareBackground();
 
 		this.createMainCanvas();
-		return this.canvas;
+		return this.mainCanvas;
 	}
 
 	// NB: this clears canvas' content so one has to call render too
-	public resize(widthPx:number, heightPx?: number) {
+	public resizeBoard(widthPx:number, heightPx?: number) {
 		if (!this.setSize(widthPx, heightPx)) return;
 
 		this.computeDimensions();
-		if (!this.isSketch) this.prepareStonePatterns();
-		this.canvas.width = this.width;
-		this.canvas.height = this.height;
+		if (!this.onlySketch) this.prepareStonePatterns();
+		this.mainCanvas.width = this.boardWidth;
+		this.mainCanvas.height = this.boardHeight;
 	}
 
-	public render() {
+	public renderAll() {
 		this.useMainCanvas();
 		this.drawBackground();
 		this.drawGrid();
@@ -139,17 +139,17 @@ class BoardRenderer {
 	}
 
 	public getCanvas() {
-		return this.canvas;
+		return this.mainCanvas;
 	}
 
 	private createMainCanvas() {
-		this.canvas = document.createElement('canvas');
-		this.canvas.width = this.width;
-		this.canvas.height = this.height;
+		this.mainCanvas = document.createElement('canvas');
+		this.mainCanvas.width = this.boardWidth;
+		this.mainCanvas.height = this.boardHeight;
 	}
 
 	private useMainCanvas() {
-		this.ctx = this.canvas.getContext('2d');
+		this.ctx = this.mainCanvas.getContext('2d');
 		this.ctx.textAlign = 'center';
 		this.ctx.textBaseline = 'middle';
 	}
@@ -163,31 +163,31 @@ class BoardRenderer {
 	}
 
 	private computeDimensions() {
-		const squareSize = Math.min(this.width, this.height);
-		this.gobanSize = this.logicalBoard.gobanSize;
+		const squareSize = Math.min(this.boardWidth, this.boardHeight);
+		this.boardSize = this.logicalBoard.boardSize;
 
 		if (this.withCoords) {
-			this.vertexSize = (squareSize - 2 * this.gridExtraMargin) / (this.gobanSize + 2);
-			if (this.vertexSize > MAX_COORD_FONTSIZE_PX * this.pixelRatio) {
-				this.coordFontSize = MAX_COORD_FONTSIZE_PX * this.pixelRatio;
-				this.vertexSize = (squareSize - 2 * this.gridExtraMargin - 2 * this.coordFontSize) / this.gobanSize;
+			this.vertexSize = (squareSize - 2 * this.gridExtraMargin) / (this.boardSize + 2);
+			if (this.vertexSize > MAX_COORD_FONTSIZE_PX * this.pxRatio) {
+				this.coordFontPx = MAX_COORD_FONTSIZE_PX * this.pxRatio;
+				this.vertexSize = (squareSize - 2 * this.gridExtraMargin - 2 * this.coordFontPx) / this.boardSize;
 			} else {
-				this.coordFontSize = this.vertexSize;
+				this.coordFontPx = this.vertexSize;
 			}
-			this.gridMargin = this.gridExtraMargin + this.coordFontSize;
+			this.gridMargin = this.gridExtraMargin + this.coordFontPx;
 		} else {
-			this.vertexSize = (squareSize - 2 * this.gridExtraMargin) / this.gobanSize;
+			this.vertexSize = (squareSize - 2 * this.gridExtraMargin) / this.boardSize;
 			this.gridMargin = this.gridExtraMargin;
 		}
 
 		this.stoneRadius = this.vertexSize / 2;
 		this.markSize = this.vertexSize * 0.55;
-		this.fontSize = this.vertexSize * 0.8;
+		this.fontPx = this.vertexSize * 0.8;
 
-		this.vertexLeft = Math.round(this.gridMargin + this.vertexSize / 2 + (this.width - squareSize) / 2);
-		this.vertexTop = Math.round(this.gridMargin + this.vertexSize / 2 + (this.height - squareSize) / 2);
-		this.vertexBottom = this.vertexTop + (this.gobanSize - 1) * this.vertexSize;
-		this.vertexRight = this.vertexLeft + (this.gobanSize - 1) * this.vertexSize;
+		this.vertexLeft = Math.round(this.gridMargin + this.vertexSize / 2 + (this.boardWidth - squareSize) / 2);
+		this.vertexTop = Math.round(this.gridMargin + this.vertexSize / 2 + (this.boardHeight - squareSize) / 2);
+		this.vertexBottom = this.vertexTop + (this.boardSize - 1) * this.vertexSize;
+		this.vertexRight = this.vertexLeft + (this.boardSize - 1) * this.vertexSize;
 	}
 
 	/**
@@ -196,29 +196,29 @@ class BoardRenderer {
 	 * @param y
 	 * @returns [i, j] - with 0,0 as bottom-left corner of the grid
 	 */
-	public pixelToGridCoordinates(x:number, y:number) :[number,number] {
+	public pixelToGridCoords(x:number, y:number) :[number,number] {
     	const i = Math.round((x - this.vertexLeft) / this.vertexSize);
     	const j = Math.round((this.vertexBottom - y) / this.vertexSize);
 		return [i, j];
 	}
 
 	private prepareBackground() {
-		if (this.backgroundCanvas) return;
+		if (this.bgCanvas) return;
 
-		if (!this.background) {
-			this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
-		} else if (this.background[0] === '#' || this.background.substr(0, 3).toLowerCase() === 'rgb') {
-			this.backgroundColor = this.background;
-		} else if (this.background === 'wood') {
-			if (this.isSketch || this.backgroundCanvas) return; // ignore if canvas is passed or sketch mode
-			var canvas = this.backgroundCanvas = document.createElement('canvas');
-			canvas.width = canvas.height = 200 * this.pixelRatio;
-			paintCanvas(canvas, this.patternSeed, this.patternSeed, this.pixelRatio);
+		if (!this.bgOption) {
+			this.bgColorRgb = DEFAULT_BACKGROUND_COLOR;
+		} else if (this.bgOption[0] === '#' || this.bgOption.substr(0, 3).toLowerCase() === 'rgb') {
+			this.bgColorRgb = this.bgOption;
+		} else if (this.bgOption === 'wood') {
+			if (this.onlySketch || this.bgCanvas) return; // ignore if canvas is passed or sketch mode
+			var canvas = this.bgCanvas = document.createElement('canvas');
+			canvas.width = canvas.height = 200 * this.pxRatio;
+			paintCanvas(canvas, this.randomSeed, this.randomSeed, this.pxRatio);
 		}
 	}
 
 	private prepareStonePatterns() {
-		setRandomSeed(this.patternSeed);
+		setRandomSeed(this.randomSeed);
 		const size = this.vertexSize;
 		const center = size / 2;
 
@@ -238,16 +238,16 @@ class BoardRenderer {
 
 		// So that each "repaint" shows the same pattern for a given stone position, pre-decides pattern indexes
 		this.slatePatternIndexes = [];
-		for (let j = 0; j < this.gobanSize; j++) {
+		for (let j = 0; j < this.boardSize; j++) {
 			let row = this.slatePatternIndexes[j] = <number[]>[];
-			for (let i = 0; i < this.gobanSize; i++) {
+			for (let i = 0; i < this.boardSize; i++) {
 				row.push(~~(pseudoRandom() * SLATE_STONE_COUNT));
 			}
 		}
 		this.shellPatternIndexes = [];
-		for (let j = 0; j < this.gobanSize; j++) {
+		for (let j = 0; j < this.boardSize; j++) {
 			let row = this.shellPatternIndexes[j] = <number[]>[];
-			for (let i = 0; i < this.gobanSize; i++) {
+			for (let i = 0; i < this.boardSize; i++) {
 				const indexIn3x3 = i % 3 + 3 * (j % 3);
 				const whichGrid = (i % 6 < 3) === (j % 6 < 3) ? 0 : 1;
 				const index = indexIn3x3 + 9 * whichGrid;
@@ -262,23 +262,23 @@ class BoardRenderer {
 	}
 
 	private setBackgroundFillStyle() {
-		if (this.backgroundCanvas) {
-			this.ctx.fillStyle = this.ctx.createPattern(this.backgroundCanvas, 'repeat');
+		if (this.bgCanvas) {
+			this.ctx.fillStyle = this.ctx.createPattern(this.bgCanvas, 'repeat');
 		} else {
-			this.ctx.fillStyle = this.backgroundColor;
+			this.ctx.fillStyle = this.bgColorRgb;
 		}
 	}
 
 	private drawBackground() {
 		this.setBackgroundFillStyle();
-		this.ctx.fillRect(0, 0, this.width, this.height);
+		this.ctx.fillRect(0, 0, this.boardWidth, this.boardHeight);
 	}
 
 	private drawGrid() {
 		this.ctx.strokeStyle = '#000';
 		this.ctx.lineWidth = 1;
 		this.ctx.beginPath();
-		for (let n = 0; n < this.gobanSize; n++) {
+		for (let n = 0; n < this.boardSize; n++) {
 			// Vertical lines
 			const x = this.vertexLeft + n * this.vertexSize;
 			this.ctx.moveTo(x, this.vertexTop);
@@ -293,7 +293,7 @@ class BoardRenderer {
 
 	private drawStarPoints() {
 		this.ctx.fillStyle = '#000';
-		let points = starPoints[this.gobanSize];
+		let points = starPoints[this.boardSize];
 		if (!points) return;
 		for (let n = 0; n < points.length; n++) {
 			let coords = points[n];
@@ -307,7 +307,7 @@ class BoardRenderer {
 
 	private drawCoordinates() {
 		this.ctx.fillStyle = '#000';
-		this.ctx.font = this.coordFontSize + "px Arial";
+		this.ctx.font = this.coordFontPx + "px Arial";
 		const letters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
 		const distFromVertex = this.stoneRadius + this.gridMargin / 2;
 
@@ -315,7 +315,7 @@ class BoardRenderer {
 		let x = this.vertexLeft;
 		let y1 = this.vertexTop - distFromVertex;
 		let y2 = this.vertexBottom + distFromVertex;
-		for (let n = 0; n < this.gobanSize; n++) {
+		for (let n = 0; n < this.boardSize; n++) {
 			this.ctx.fillText(letters[n], x, y1);
 			this.ctx.fillText(letters[n], x, y2);
 			x += this.vertexSize;
@@ -325,8 +325,8 @@ class BoardRenderer {
 		let x1 = this.vertexLeft - distFromVertex;
 		let x2 = this.vertexRight + distFromVertex;
 		let y = this.vertexTop;
-		for (let n = 0; n < this.gobanSize; n++) {
-			const rowNumber = (this.gobanSize - n).toString();
+		for (let n = 0; n < this.boardSize; n++) {
+			const rowNumber = (this.boardSize - n).toString();
 			this.ctx.fillText(rowNumber, x1, y);
 			this.ctx.fillText(rowNumber, x2, y);
 			y += this.vertexSize;
@@ -335,11 +335,11 @@ class BoardRenderer {
 
 	// Stones, marks, labels
 	private drawAllObjects() {
-		const levelCount = this.isSketch ? 1 : 2;
+		const levelCount = this.onlySketch ? 1 : 2;
 
 		for (let level = 0; level < levelCount; level++) {
-			for (let j = 0; j < this.gobanSize; j++) {
-				for (let i = 0; i < this.gobanSize; i++) {
+			for (let j = 0; j < this.boardSize; j++) {
+				for (let i = 0; i < this.boardSize; i++) {
 					this.renderAt(i, j, level);
 				}
 			}
@@ -349,16 +349,16 @@ class BoardRenderer {
 	private renderAt(i:number, j:number, level:number) {
 		const x = i * this.vertexSize + this.vertexLeft;
 		const y = this.vertexBottom - j * this.vertexSize;
-		const vertex = this.logicalBoard.getVertexAt(i, j);
+		const vertex = this.logicalBoard.getVertex(i, j);
 
 		if (vertex.stoneColor !== Color.EMPTY) {
-			if (level === 0 && !this.isSketch)  {
+			if (level === 0 && !this.onlySketch)  {
 				this.renderStoneShadow(x, y);
 			} else {
 				this.renderStoneAt(x, y, vertex.stoneColor, i, j);
 			}
 		}
-		if (vertex.stoneColor === Color.EMPTY || level === 1 || this.isSketch) {
+		if (vertex.stoneColor === Color.EMPTY || level === 1 || this.onlySketch) {
 			if (vertex.mark) {
 				this.drawMarkAt(x, y, vertex);
 			}
@@ -375,7 +375,7 @@ class BoardRenderer {
 	}
 
 	private renderStoneAt(x:number, y:number, color:Color, i:number, j:number) {
-		if (this.isSketch) return this.renderSketchStoneAt(x, y, color, this.stoneRadius);
+		if (this.onlySketch) return this.renderSketchStoneAt(x, y, color, this.stoneRadius);
 
 		let img;
 		if (color === Color.BLACK) {
@@ -395,7 +395,7 @@ class BoardRenderer {
 	}
 
 	private renderMiniStoneAt(x:number, y:number, color:Color, underStone:Color) {
-		if (this.isSketch || underStone !== Color.EMPTY) {
+		if (this.onlySketch || underStone !== Color.EMPTY) {
 			const radius = this.stoneRadius * 0.4;
 			return this.renderSketchStoneAt(x, y, color, radius);
 		} else {
@@ -456,7 +456,7 @@ class BoardRenderer {
 		this.drawLightReflexion(x, y, radius, '#fff', '#aaa', 0.33, 1);
 		const shellLines = SHELL_LINES[~~(pseudoRandom() * 3)];
 		const angle = pseudoRandom() * 2 * Math.PI;
-		const thickness = (1 + pseudoRandom() * 1.5) * this.pixelRatio;
+		const thickness = (1 + pseudoRandom() * 1.5) * this.pxRatio;
 		const factor =  0.2 + pseudoRandom() * 0.3; // 0: lines are straight; 0.9: lines are very curvy
 		this.drawShell(x, y, radius, angle, shellLines, factor, thickness);
 	}
@@ -554,8 +554,8 @@ class BoardRenderer {
 			break;
 		case '*':
 			ctx.fillStyle = this.prepareForDrawingOver(x, y, vertex);
-			ctx.font = (1.5 * this.fontSize) + "px Arial";
-			ctx.fillText('*', x, y + this.fontSize * 0.35);
+			ctx.font = (1.5 * this.fontPx) + "px Arial";
+			ctx.fillText('*', x, y + this.fontPx * 0.35);
 			break;
 		case '+':
 			ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
@@ -588,7 +588,7 @@ class BoardRenderer {
 		const estimatedWidth = largeCharCount + 0.5 * thinCharCount;
 		const factor = 1.2 - 0.2 * estimatedWidth;
 
-		const fontSize = Math.max(this.fontSize * factor, MIN_FONTSIZE_PX * this.pixelRatio);
+		const fontSize = Math.max(this.fontPx * factor, MIN_FONTSIZE_PX * this.pxRatio);
 
 		this.ctx.font = fontSize + "px Arial";
 
