@@ -67,8 +67,8 @@ class BoardRenderer {
 	stoneShadow: HTMLCanvasElement;
 	miniShell: HTMLCanvasElement;
 	miniSlate: HTMLCanvasElement;
-	shellPatternIndexes: [number,number][]; // indexes are coordinates as j,i
-	slatePatternIndexes: [number,number][];
+	shellPatternIndexes: number[][]; // indexes are coordinates as j,i
+	slatePatternIndexes: number[][];
 
 	public constructor(options:{
 		widthPx:number,
@@ -239,14 +239,14 @@ class BoardRenderer {
 		// So that each "repaint" shows the same pattern for a given stone position, pre-decides pattern indexes
 		this.slatePatternIndexes = [];
 		for (let j = 0; j < this.gobanSize; j++) {
-			let row = this.slatePatternIndexes[j] = <[number,number]>[];
+			let row = this.slatePatternIndexes[j] = <number[]>[];
 			for (let i = 0; i < this.gobanSize; i++) {
 				row.push(~~(pseudoRandom() * SLATE_STONE_COUNT));
 			}
 		}
 		this.shellPatternIndexes = [];
 		for (let j = 0; j < this.gobanSize; j++) {
-			let row = this.shellPatternIndexes[j] = <[number,number]>[];
+			let row = this.shellPatternIndexes[j] = <number[]>[];
 			for (let i = 0; i < this.gobanSize; i++) {
 				const indexIn3x3 = i % 3 + 3 * (j % 3);
 				const whichGrid = (i % 6 < 3) === (j % 6 < 3) ? 0 : 1;
@@ -538,7 +538,7 @@ class BoardRenderer {
 		const size = (parseInt(params[0]) / 10 || 1) * this.markSize;
 		const half = size / 2;
 		const lineWidth = (parseInt(params[1]) || 5) * size / 24;
-		
+
 		switch (mark) {
 		case '[]':
 			ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
