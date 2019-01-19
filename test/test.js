@@ -35,8 +35,9 @@ function basicTest() {
  */
 function testManyRenderings() {
     var width = 512;
-    var gobo = newGobo({ widthPx: width, background: 'wood', patternSeed: 0.4174168424973104 });
-    var code = "var gobo = new Gobo({\n    widthPx: 512,\n    background: 'wood',\n    patternSeed: 0.4174168424973104 // for random patterns of wood & stones (0 < seed < 1)\n});\n\naddStoneAndRender(gobo, 1000);\n\nfunction addStoneAndRender(gobo, count) {\n    if (!count) return; // finished\n    gobo.setStoneAt(~~(Math.random() * 19), ~~(Math.random() * 19), Math.random() < 0.5 ? 0 : 1);\n    gobo.render();\n    setTimeout(addStoneAndRender, 0, gobo, count - 1);\n}";
+    var seed = ~~(Math.random() * 100000) / 100000; // so we can use this demo to find nice seeds
+    var gobo = newGobo({ widthPx: width, background: 'wood', patternSeed: seed });
+    var code = "var gobo = new Gobo({\n    widthPx: 512,\n    background: 'wood',\n    patternSeed: " + seed + " // for random patterns of wood & stones (0 < seed < 1)\n});\n\naddStoneAndRender(gobo, 1000);\n\nfunction addStoneAndRender(gobo, count) {\n    if (!count) return; // finished\n    gobo.setStoneAt(~~(Math.random() * 19), ~~(Math.random() * 19), Math.random() < 0.5 ? 0 : 1);\n    gobo.render();\n    setTimeout(addStoneAndRender, 0, gobo, count - 1);\n}";
     var textDiv = createSample(width, gobo.canvas, 'Performance Test', '1,000 "render" operations (full board is redrawn).', code).textDiv;
     var t0 = Date.now();
     addStoneAndRender(gobo, 1000, function () {
@@ -119,14 +120,15 @@ function loadImage(image, cb) {
  */
 function testFullWhiteBoard() {
     var width = 512, gobanSize = 13;
-    var gobo = newGobo({ gobanSize: gobanSize, widthPx: width, background: 'wood' });
+    var seed = 0.993623429;
+    var gobo = newGobo({ gobanSize: gobanSize, widthPx: width, background: 'wood', patternSeed: seed });
     for (var j = 0; j < gobanSize; j++) {
         for (var i = 0; i < gobanSize; i++) {
             gobo.setStoneAt(i, j, WHITE);
         }
     }
     gobo.render();
-    var code = "var gobo = new Gobo({\n\tgobanSize: 13,\n\twidthPx: 512,\n\tbackground: 'wood'\n});\n\nfor (var j = 0; j < 13; j++) {\n    for (var i = 0; i < 13; i++) {\n        gobo.setStoneAt(i, j, WHITE);\n    }\n}\n\ngobo.render();";
+    var code = "var gobo = new Gobo({\n\tgobanSize: 13,\n\twidthPx: 512,\n\tbackground: 'wood',\n\tpatternSeed: " + seed + "\n});\n\nfor (var j = 0; j < 13; j++) {\n    for (var i = 0; i < 13; i++) {\n        gobo.setStoneAt(i, j, WHITE);\n    }\n}\n\ngobo.render();";
     createSample(width, gobo.canvas, 'Full White Board', 'Test used to gauge if white stones look "different enough" to a human eye.', code);
 }
 //---

@@ -5,7 +5,7 @@
 
     "Gobo", "gobo",
     "gobanSize", "widthPx", "heightPx", "marginPx", "noCoords", "background", "backgroundCanvas", "isSketch",
-    "patternSeed", "pixelRatio",
+    "patternSeed", "pixelRatio", "changeLook", "simpleStones",
     "pixelToGridCoordinates", "setStoneAt", "setMarkAt", "setLabelAt",
     "render", "getStoneColorAt", "clearVertexAt"
   ]

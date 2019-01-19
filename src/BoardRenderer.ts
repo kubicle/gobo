@@ -48,10 +48,12 @@ class BoardRenderer {
 	randomSeed: number; // as provided in options
 	bgOption: string; // as provided in options
 	bgColorRgb: string;
+	bgCanvasOption: HTMLCanvasElement; // as provided in options
 	bgCanvas: HTMLCanvasElement;
 	fontPx: number;
 	coordFontPx: number;
 	withCoords: boolean;
+	withSimpleStones: boolean;
 
 	vertexSize: number;
 	vertexLeft: number;
@@ -76,6 +78,7 @@ class BoardRenderer {
 		marginPx?:number,
 		isSketch?:boolean,
 		noCoords?:boolean,
+		simpleStones?:boolean,
 		backgroundCanvas?:HTMLCanvasElement,
 		background?:string,
 		patternSeed?:number,
@@ -85,13 +88,37 @@ class BoardRenderer {
 
 		this.onlySketch = !!options.isSketch;
 		this.withCoords = !options.noCoords;
+		this.withSimpleStones = !!options.simpleStones;
 		this.gridExtraMargin = (options.marginPx || DEFAULT_MARGIN_PX) * this.pxRatio;
 
-		this.bgCanvas = options.backgroundCanvas;
+		this.bgCanvasOption = options.backgroundCanvas;
 		this.bgOption = options.background;
 		this.randomSeed = options.patternSeed || Math.random();
 
 		this.setSize(options.widthPx, options.heightPx);
+	}
+
+	public changeLook (options:{
+		isSketch?:boolean,
+		noCoords?:boolean,
+		simpleStones?:boolean,
+		background?:string,
+		patternSeed?:number
+	}) {
+		if (options.isSketch !== undefined) this.onlySketch = options.isSketch;
+		if (options.noCoords !== undefined) {
+			this.withCoords = !options.noCoords;
+			this.computeDimensions();
+		}
+		if (options.simpleStones !== undefined) {
+			this.withSimpleStones = options.simpleStones;
+			if (!this.onlySketch) this.prepareStonePatterns();
+		}
+		if (options.background !== undefined || options.patternSeed !== undefined) {
+			if (options.background !== undefined) this.bgOption = options.background;
+			if (options.patternSeed !== undefined) this.randomSeed = options.patternSeed;
+			this.prepareBackground();
+		}
 	}
 
 	private setSize(widthPx:number, heightPx?: number) :boolean {
@@ -203,14 +230,16 @@ class BoardRenderer {
 	}
 
 	private prepareBackground() {
-		if (this.bgCanvas) return;
-
-		if (!this.bgOption) {
+		if (this.bgCanvasOption) {
+			this.bgCanvas = this.bgCanvasOption;
+		} else if (!this.bgOption) {
 			this.bgColorRgb = DEFAULT_BACKGROUND_COLOR;
+			this.bgCanvas = null;
 		} else if (this.bgOption[0] === '#' || this.bgOption.substr(0, 3).toLowerCase() === 'rgb') {
 			this.bgColorRgb = this.bgOption;
+			this.bgCanvas = null;
 		} else if (this.bgOption === 'wood') {
-			if (this.onlySketch || this.bgCanvas) return; // ignore if canvas is passed or sketch mode
+			if (this.onlySketch) return; // ignore if sketch mode
 			var canvas = this.bgCanvas = document.createElement('canvas');
 			canvas.width = canvas.height = 200 * this.pxRatio;
 			paintCanvas(canvas, this.randomSeed, this.randomSeed, this.pxRatio);
@@ -226,32 +255,39 @@ class BoardRenderer {
 		this.drawStoneShadow(center, center);
 
 		this.slateStones = [];
-		for (let i = SLATE_STONE_COUNT - 1; i >= 0; i--) {
+		this.shellStones = [];
+		if (this.withSimpleStones) {
 			this.slateStones.push(this.createAndUseCanvas(size, size));
 			this.drawSlateStone(center, center, this.stoneRadius);
-		}
-		this.shellStones = [];
-		for (let i = 9 * SHELL_3x3GRID_COUNT - 1; i >= 0; i--) {
 			this.shellStones.push(this.createAndUseCanvas(size, size));
 			this.drawShellStone(center, center, this.stoneRadius);
-		}
-
-		// So that each "repaint" shows the same pattern for a given stone position, pre-decides pattern indexes
-		this.slatePatternIndexes = [];
-		for (let j = 0; j < this.boardSize; j++) {
-			let row = this.slatePatternIndexes[j] = <number[]>[];
-			for (let i = 0; i < this.boardSize; i++) {
-				row.push(~~(pseudoRandom() * SLATE_STONE_COUNT));
+		} else {
+			for (let i = SLATE_STONE_COUNT - 1; i >= 0; i--) {
+				this.slateStones.push(this.createAndUseCanvas(size, size));
+				this.drawSlateStone(center, center, this.stoneRadius);
 			}
-		}
-		this.shellPatternIndexes = [];
-		for (let j = 0; j < this.boardSize; j++) {
-			let row = this.shellPatternIndexes[j] = <number[]>[];
-			for (let i = 0; i < this.boardSize; i++) {
-				const indexIn3x3 = i % 3 + 3 * (j % 3);
-				const whichGrid = (i % 6 < 3) === (j % 6 < 3) ? 0 : 1;
-				const index = indexIn3x3 + 9 * whichGrid;
-				row.push(index);
+			for (let i = 9 * SHELL_3x3GRID_COUNT - 1; i >= 0; i--) {
+				this.shellStones.push(this.createAndUseCanvas(size, size));
+				this.drawShellStone(center, center, this.stoneRadius);
+			}
+
+			// So that each "repaint" shows the same pattern for a given stone position, pre-decides pattern indexes
+			this.slatePatternIndexes = [];
+			for (let j = 0; j < this.boardSize; j++) {
+				let row = this.slatePatternIndexes[j] = <number[]>[];
+				for (let i = 0; i < this.boardSize; i++) {
+					row.push(~~(pseudoRandom() * SLATE_STONE_COUNT));
+				}
+			}
+			this.shellPatternIndexes = [];
+			for (let j = 0; j < this.boardSize; j++) {
+				let row = this.shellPatternIndexes[j] = <number[]>[];
+				for (let i = 0; i < this.boardSize; i++) {
+					const indexIn3x3 = i % 3 + 3 * (j % 3);
+					const whichGrid = (i % 6 < 3) === (j % 6 < 3) ? 0 : 1;
+					const index = indexIn3x3 + 9 * whichGrid;
+					row.push(index);
+				}
 			}
 		}
 
@@ -377,12 +413,15 @@ class BoardRenderer {
 	private renderStoneAt(x:number, y:number, color:Color, i:number, j:number) {
 		if (this.onlySketch) return this.renderSketchStoneAt(x, y, color, this.stoneRadius);
 
-		let img;
+		let stoneCollection, index;
 		if (color === Color.BLACK) {
-			img = this.slateStones[this.slatePatternIndexes[j][i]];
+			stoneCollection = this.slateStones;
+			index = this.withSimpleStones ? 0 : this.slatePatternIndexes[j][i];
 		} else {
-			img = this.shellStones[this.shellPatternIndexes[j][i]];
+			stoneCollection = this.shellStones;
+			index = this.withSimpleStones ? 0 : this.shellPatternIndexes[j][i];
 		}
+		const img = stoneCollection[index];
 
 		this.ctx.drawImage(img, x - this.stoneRadius, y - this.stoneRadius);
 	}
@@ -436,29 +475,36 @@ class BoardRenderer {
 	}
 
 	private drawSlateStone(x:number, y:number, radius:number) {
-		const radiusOut = 0.8 - pseudoRandom() * 0.2;
+		if (!this.withSimpleStones) {
+			const radiusOut = 0.8 - pseudoRandom() * 0.2;
 
-		const brightness = pseudoRandom() * 40 + 76;
-		const color = 10;
-		const colorIn = 'rgb(' +
-			~~(pseudoRandom() * color + brightness) + ',' +
-			~~(pseudoRandom() * color + brightness) + ',' +
-			~~(pseudoRandom() * color + brightness) + ')';
+			const brightness = pseudoRandom() * 40 + 76;
+			const color = 10;
+			const colorIn = 'rgb(' +
+				~~(pseudoRandom() * color + brightness) + ',' +
+				~~(pseudoRandom() * color + brightness) + ',' +
+				~~(pseudoRandom() * color + brightness) + ')';
 
-		this.drawLightReflexion(x, y, radius, colorIn, '#000', 0.01, radiusOut);
+			this.drawLightReflexion(x, y, radius, colorIn, '#000', 0.01, radiusOut);
+		} else {
+			this.drawLightReflexion(x, y, radius, '#666', '#000', 0.01, 0.75);
+		}
 	}
 
 	/**
-	 * Clamshell stones drawing algorithm from Jan Prokop's WGo.js
+	 * @license Clamshell stones drawing algorithm based on Jan Prokop's WGo.js
 	 * (http://wgo.waltheri.net/)
 	 */
 	private drawShellStone(x:number, y:number, radius:number) {
 		this.drawLightReflexion(x, y, radius, '#fff', '#aaa', 0.33, 1);
-		const shellLines = SHELL_LINES[~~(pseudoRandom() * 3)];
-		const angle = pseudoRandom() * 2 * Math.PI;
-		const thickness = (1 + pseudoRandom() * 1.5) * this.pxRatio;
-		const factor =  0.2 + pseudoRandom() * 0.3; // 0: lines are straight; 0.9: lines are very curvy
-		this.drawShell(x, y, radius, angle, shellLines, factor, thickness);
+
+		if (!this.withSimpleStones) {
+			const shellLines = SHELL_LINES[~~(pseudoRandom() * 3)];
+			const angle = pseudoRandom() * 2 * Math.PI;
+			const thickness = (1 + pseudoRandom() * 1.5) * this.pxRatio;
+			const factor =  0.2 + pseudoRandom() * 0.3; // 0: lines are straight; 0.9: lines are very curvy
+			this.drawShell(x, y, radius, angle, shellLines, factor, thickness);
+		}
 	}
 
 	private drawShell(x:number, y:number, radius:number, angle:number, lines:number[], factor:number, thickness:number) {

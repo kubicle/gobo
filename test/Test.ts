@@ -7,7 +7,7 @@ const BLACK = 0, WHITE = 1, EMPTY = -1;
 function addIntro() {
 	newDiv(document.body, 'title', 'gobo Tests & Samples');
 	newDiv(document.body, 'subtitle', 'General Remarks');
-	newDiv(document.body, 'intro', 
+	newDiv(document.body, 'intro',
 		`These samples are given in JavaScript for the wider audience.\nThis html page contains a tag:`);
 	newDiv(document.body, 'codeInText', `<script src='../bin/gobo.js'></script>`);
 	newDiv(document.body, 'intro', `then you can simply do:`);
@@ -58,14 +58,14 @@ gobo.render();`);
  */
 function testManyRenderings() {
 	const width = 512;
-
-	const gobo = newGobo({ widthPx: width, background: 'wood', patternSeed: 0.4174168424973104 });
+	const seed = ~~(Math.random() * 100000) / 100000; // so we can use this demo to find nice seeds
+	const gobo = newGobo({ widthPx: width, background: 'wood', patternSeed: seed });
 
 	const code =
 `var gobo = new Gobo({
     widthPx: 512,
     background: \'wood\',
-    patternSeed: 0.4174168424973104 // for random patterns of wood & stones (0 < seed < 1)
+    patternSeed: ${seed} // for random patterns of wood & stones (0 < seed < 1)
 });
 
 addStoneAndRender(gobo, 1000);
@@ -118,7 +118,7 @@ function testLabelsAndMarks() {
 
 	gobo.setStoneAt(1, 3, BLACK); gobo.setMarkAt(1, 3, '+:4,1');
 	gobo.setStoneAt(1, 4, WHITE); gobo.setMarkAt(1, 4, '+');
-	
+
 	gobo.setLabelAt(3, 3, 'A'); gobo.setLabelAt(3, 4, '12');
 	gobo.setStoneAt(3, 5, BLACK); gobo.setLabelAt(3, 5, '1');
 
@@ -163,7 +163,7 @@ function testCustomBackground() {
 	const width = 350;
 	const woodExample = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACKUlEQVQ4T7WUXXLcMAyDQVKyszl1TtBr9g5ekeqAkvyTZvpW58UzO4E/EgDl96+vXovhVQoCHW8PHO+G6IHNCqwoPDo8Any2YvluIthLQYuO5oGiAhGB/D/BWhB9EjZHhCeNqcI7EEH+b4RW0PokNEH+PQgpGIHjFCxTsKcgH66H78qRT0GHmUJFb4IkjEvQw3NHJgrHFBSgmsE9oKop6D3Q3FFMIbgL0pQOvKPhaJEUW1GYGrw/CS/BsY40hSNfpig+a03H6PLbPb/8oQoxy93eR6Ygd7uRNvfuqEUh/dyh4lVqEh7eUrT3yPFMJSkYFZk7PAUzQlyTo5oCy5TNFK9tELZlSnfsqtBSzhwuwWXKNn9LwvsOGY8P/pguO97cYQ/sdG7u8EE4g/1vwTpI+LUxMnNYMgrLFBKW1RQVbHpBbKrAig3/cRAOMYr23nPpIpqVZIzo4ooNY5LvE4L55Acz2DlyEkaOe4QDS1AlzaIRolcOi2qG/BTMHU6X9xSsSdfCcfgQ3M0A1YwNCTk+ydJlkzweS5BQfJKQjSAhDWFIx8jAXsZeUpCEbAqpVg5vhH8J7tUyMkMw0GdTREew0+Vb9Xi+0uUZ7CG4Rq6WvXWfsXHGxnPkR2yWIGPDpsxIjabY1RR2ljuk4NghuzyOA4/AT11mg3KHM7t0/Kzej8GmIAnnRXl0OYOteTw8eFAclb1f1yarx+OQx3IRPq/N9y6P8zWuzVU9wR9BRU5H3DbiDgAAAABJRU5ErkJggg==';
 
-	const code = 
+	const code =
 `var gobo = new Gobo({
 	backgroundCanvas: canvas,
 	noCoords: true, // turn off coordinates
@@ -206,7 +206,8 @@ function loadImage(image:string, cb:()=>void) {
  */
 function testFullWhiteBoard() {
 	const width = 512, gobanSize = 13;
-	const gobo = newGobo({ gobanSize: gobanSize, widthPx: width, background: 'wood' });
+	const seed = 0.993623429;
+	const gobo = newGobo({ gobanSize: gobanSize, widthPx: width, background: 'wood', patternSeed: seed });
 
 	for (let j = 0; j < gobanSize; j++) {
 		for (let i = 0; i < gobanSize; i++) {
@@ -219,7 +220,8 @@ function testFullWhiteBoard() {
 `var gobo = new Gobo({
 	gobanSize: 13,
 	widthPx: 512,
-	background: 'wood'
+	background: 'wood',
+	patternSeed: ${seed}
 });
 
 for (var j = 0; j < 13; j++) {

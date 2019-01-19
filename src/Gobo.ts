@@ -15,6 +15,7 @@ class Gobo {
 		marginPx?:number,
 		isSketch?:boolean,
 		noCoords?:boolean,
+		simpleStones?:boolean,
 		backgroundCanvas?:HTMLCanvasElement,
 		background?:string,
 		patternSeed?:number,
@@ -23,6 +24,16 @@ class Gobo {
 		this.board = new LogicalBoard(options.gobanSize || 19);
 		this.renderer = new BoardRenderer(options);
 		this.canvas = this.renderer.prepare(this.board);
+	}
+
+	public changeLook (options:{
+		isSketch?:boolean,
+		noCoords?:boolean,
+		simpleStones?:boolean,
+		background?:string,
+		patternSeed?:number
+	}) {
+		this.renderer.changeLook(options);
 	}
 
 	public resize(widthPx:number, heightPx?: number) {

@@ -31,12 +31,33 @@ var BoardRenderer = (function () {
         this.pxRatio = Math.max(1, options.pixelRatio || 1);
         this.onlySketch = !!options.isSketch;
         this.withCoords = !options.noCoords;
+        this.withSimpleStones = !!options.simpleStones;
         this.gridExtraMargin = (options.marginPx || DEFAULT_MARGIN_PX) * this.pxRatio;
-        this.bgCanvas = options.backgroundCanvas;
+        this.bgCanvasOption = options.backgroundCanvas;
         this.bgOption = options.background;
         this.randomSeed = options.patternSeed || Math.random();
         this.setSize(options.widthPx, options.heightPx);
     }
+    BoardRenderer.prototype.changeLook = function (options) {
+        if (options.isSketch !== undefined)
+            this.onlySketch = options.isSketch;
+        if (options.noCoords !== undefined) {
+            this.withCoords = !options.noCoords;
+            this.computeDimensions();
+        }
+        if (options.simpleStones !== undefined) {
+            this.withSimpleStones = options.simpleStones;
+            if (!this.onlySketch)
+                this.prepareStonePatterns();
+        }
+        if (options.background !== undefined || options.patternSeed !== undefined) {
+            if (options.background !== undefined)
+                this.bgOption = options.background;
+            if (options.patternSeed !== undefined)
+                this.randomSeed = options.patternSeed;
+            this.prepareBackground();
+        }
+    };
     BoardRenderer.prototype.setSize = function (widthPx, heightPx) {
         if (!widthPx) {
             console.error('Invalid gobo widthPx: ' + widthPx);
@@ -136,17 +157,20 @@ var BoardRenderer = (function () {
         return [i, j];
     };
     BoardRenderer.prototype.prepareBackground = function () {
-        if (this.bgCanvas)
-            return;
-        if (!this.bgOption) {
+        if (this.bgCanvasOption) {
+            this.bgCanvas = this.bgCanvasOption;
+        }
+        else if (!this.bgOption) {
             this.bgColorRgb = DEFAULT_BACKGROUND_COLOR;
+            this.bgCanvas = null;
         }
         else if (this.bgOption[0] === '#' || this.bgOption.substr(0, 3).toLowerCase() === 'rgb') {
             this.bgColorRgb = this.bgOption;
+            this.bgCanvas = null;
         }
         else if (this.bgOption === 'wood') {
-            if (this.onlySketch || this.bgCanvas)
-                return; // ignore if canvas is passed or sketch mode
+            if (this.onlySketch)
+                return; // ignore if sketch mode
             var canvas = this.bgCanvas = document.createElement('canvas');
             canvas.width = canvas.height = 200 * this.pxRatio;
             wood_js_1.paintCanvas(canvas, this.randomSeed, this.randomSeed, this.pxRatio);
@@ -159,31 +183,39 @@ var BoardRenderer = (function () {
         this.stoneShadow = this.createAndUseCanvas(size, size);
         this.drawStoneShadow(center, center);
         this.slateStones = [];
-        for (var i = SLATE_STONE_COUNT - 1; i >= 0; i--) {
+        this.shellStones = [];
+        if (this.withSimpleStones) {
             this.slateStones.push(this.createAndUseCanvas(size, size));
             this.drawSlateStone(center, center, this.stoneRadius);
-        }
-        this.shellStones = [];
-        for (var i = 9 * SHELL_3x3GRID_COUNT - 1; i >= 0; i--) {
             this.shellStones.push(this.createAndUseCanvas(size, size));
             this.drawShellStone(center, center, this.stoneRadius);
         }
-        // So that each "repaint" shows the same pattern for a given stone position, pre-decides pattern indexes
-        this.slatePatternIndexes = [];
-        for (var j = 0; j < this.boardSize; j++) {
-            var row = this.slatePatternIndexes[j] = [];
-            for (var i = 0; i < this.boardSize; i++) {
-                row.push(~~(cheapSeed_1.pseudoRandom() * SLATE_STONE_COUNT));
+        else {
+            for (var i = SLATE_STONE_COUNT - 1; i >= 0; i--) {
+                this.slateStones.push(this.createAndUseCanvas(size, size));
+                this.drawSlateStone(center, center, this.stoneRadius);
             }
-        }
-        this.shellPatternIndexes = [];
-        for (var j = 0; j < this.boardSize; j++) {
-            var row = this.shellPatternIndexes[j] = [];
-            for (var i = 0; i < this.boardSize; i++) {
-                var indexIn3x3 = i % 3 + 3 * (j % 3);
-                var whichGrid = (i % 6 < 3) === (j % 6 < 3) ? 0 : 1;
-                var index = indexIn3x3 + 9 * whichGrid;
-                row.push(index);
+            for (var i = 9 * SHELL_3x3GRID_COUNT - 1; i >= 0; i--) {
+                this.shellStones.push(this.createAndUseCanvas(size, size));
+                this.drawShellStone(center, center, this.stoneRadius);
+            }
+            // So that each "repaint" shows the same pattern for a given stone position, pre-decides pattern indexes
+            this.slatePatternIndexes = [];
+            for (var j = 0; j < this.boardSize; j++) {
+                var row = this.slatePatternIndexes[j] = [];
+                for (var i = 0; i < this.boardSize; i++) {
+                    row.push(~~(cheapSeed_1.pseudoRandom() * SLATE_STONE_COUNT));
+                }
+            }
+            this.shellPatternIndexes = [];
+            for (var j = 0; j < this.boardSize; j++) {
+                var row = this.shellPatternIndexes[j] = [];
+                for (var i = 0; i < this.boardSize; i++) {
+                    var indexIn3x3 = i % 3 + 3 * (j % 3);
+                    var whichGrid = (i % 6 < 3) === (j % 6 < 3) ? 0 : 1;
+                    var index = indexIn3x3 + 9 * whichGrid;
+                    row.push(index);
+                }
             }
         }
         this.miniShell = this.createAndUseCanvas(size, size);
@@ -298,13 +330,16 @@ var BoardRenderer = (function () {
     BoardRenderer.prototype.renderStoneAt = function (x, y, color, i, j) {
         if (this.onlySketch)
             return this.renderSketchStoneAt(x, y, color, this.stoneRadius);
-        var img;
+        var stoneCollection, index;
         if (color === 0 /* BLACK */) {
-            img = this.slateStones[this.slatePatternIndexes[j][i]];
+            stoneCollection = this.slateStones;
+            index = this.withSimpleStones ? 0 : this.slatePatternIndexes[j][i];
         }
         else {
-            img = this.shellStones[this.shellPatternIndexes[j][i]];
+            stoneCollection = this.shellStones;
+            index = this.withSimpleStones ? 0 : this.shellPatternIndexes[j][i];
         }
+        var img = stoneCollection[index];
         this.ctx.drawImage(img, x - this.stoneRadius, y - this.stoneRadius);
     };
     BoardRenderer.prototype.renderSketchStoneAt = function (x, y, color, radius) {
@@ -346,26 +381,33 @@ var BoardRenderer = (function () {
         this.ctx.fill();
     };
     BoardRenderer.prototype.drawSlateStone = function (x, y, radius) {
-        var radiusOut = 0.8 - cheapSeed_1.pseudoRandom() * 0.2;
-        var brightness = cheapSeed_1.pseudoRandom() * 40 + 76;
-        var color = 10;
-        var colorIn = 'rgb(' +
-            ~~(cheapSeed_1.pseudoRandom() * color + brightness) + ',' +
-            ~~(cheapSeed_1.pseudoRandom() * color + brightness) + ',' +
-            ~~(cheapSeed_1.pseudoRandom() * color + brightness) + ')';
-        this.drawLightReflexion(x, y, radius, colorIn, '#000', 0.01, radiusOut);
+        if (!this.withSimpleStones) {
+            var radiusOut = 0.8 - cheapSeed_1.pseudoRandom() * 0.2;
+            var brightness = cheapSeed_1.pseudoRandom() * 40 + 76;
+            var color = 10;
+            var colorIn = 'rgb(' +
+                ~~(cheapSeed_1.pseudoRandom() * color + brightness) + ',' +
+                ~~(cheapSeed_1.pseudoRandom() * color + brightness) + ',' +
+                ~~(cheapSeed_1.pseudoRandom() * color + brightness) + ')';
+            this.drawLightReflexion(x, y, radius, colorIn, '#000', 0.01, radiusOut);
+        }
+        else {
+            this.drawLightReflexion(x, y, radius, '#666', '#000', 0.01, 0.75);
+        }
     };
     /**
-     * Clamshell stones drawing algorithm from Jan Prokop's WGo.js
+     * @license Clamshell stones drawing algorithm based on Jan Prokop's WGo.js
      * (http://wgo.waltheri.net/)
      */
     BoardRenderer.prototype.drawShellStone = function (x, y, radius) {
         this.drawLightReflexion(x, y, radius, '#fff', '#aaa', 0.33, 1);
-        var shellLines = SHELL_LINES[~~(cheapSeed_1.pseudoRandom() * 3)];
-        var angle = cheapSeed_1.pseudoRandom() * 2 * Math.PI;
-        var thickness = (1 + cheapSeed_1.pseudoRandom() * 1.5) * this.pxRatio;
-        var factor = 0.2 + cheapSeed_1.pseudoRandom() * 0.3; // 0: lines are straight; 0.9: lines are very curvy
-        this.drawShell(x, y, radius, angle, shellLines, factor, thickness);
+        if (!this.withSimpleStones) {
+            var shellLines = SHELL_LINES[~~(cheapSeed_1.pseudoRandom() * 3)];
+            var angle = cheapSeed_1.pseudoRandom() * 2 * Math.PI;
+            var thickness = (1 + cheapSeed_1.pseudoRandom() * 1.5) * this.pxRatio;
+            var factor = 0.2 + cheapSeed_1.pseudoRandom() * 0.3; // 0: lines are straight; 0.9: lines are very curvy
+            this.drawShell(x, y, radius, angle, shellLines, factor, thickness);
+        }
     };
     BoardRenderer.prototype.drawShell = function (x, y, radius, angle, lines, factor, thickness) {
         var fromAngle = angle;
@@ -501,6 +543,9 @@ var Gobo = (function () {
         this.renderer = new BoardRenderer_1.BoardRenderer(options);
         this.canvas = this.renderer.prepare(this.board);
     }
+    Gobo.prototype.changeLook = function (options) {
+        this.renderer.changeLook(options);
+    };
     Gobo.prototype.resize = function (widthPx, heightPx) {
         this.renderer.resizeBoard(widthPx, heightPx);
     };
