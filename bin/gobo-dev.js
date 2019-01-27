@@ -492,17 +492,23 @@ var BoardRenderer = (function () {
             case '*':
                 ctx.fillStyle = this.prepareForDrawingOver(x, y, vertex);
                 ctx.font = (1.5 * this.fontPx) + "px Arial";
-                ctx.fillText('*', x, y + this.fontPx * 0.35);
+                ctx.fillText('*', x, y + this.fontPx * 0.42);
+                break;
+            case 'X':
+                ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
+                ctx.lineWidth = lineWidth;
+                this.drawCrossMark(x, y, half);
                 break;
             case '+':
                 ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
                 ctx.lineWidth = lineWidth;
-                ctx.beginPath();
-                ctx.moveTo(x - half, y);
-                ctx.lineTo(x + half, y);
-                ctx.moveTo(x, y - half);
-                ctx.lineTo(x, y + half);
-                ctx.stroke();
+                this.drawPlusMark(x, y, half);
+                break;
+            case 'V':
+            case 'A':
+                ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
+                ctx.lineWidth = lineWidth;
+                this.drawTriangleMark(x, y, half, mark === 'V' ? 1 : -1);
                 break;
             case '+?':
                 ctx.fillStyle = '#888';
@@ -516,6 +522,36 @@ var BoardRenderer = (function () {
                 console.error('Unknown mark type: ' + vertex.mark);
         }
     };
+    BoardRenderer.prototype.drawCrossMark = function (x, y, ray) {
+        var ctx = this.ctx;
+        ctx.beginPath();
+        ctx.moveTo(x - ray, y - ray);
+        ctx.lineTo(x + ray, y + ray);
+        ctx.moveTo(x + ray, y - ray);
+        ctx.lineTo(x - ray, y + ray);
+        ctx.stroke();
+    };
+    BoardRenderer.prototype.drawPlusMark = function (x, y, ray) {
+        var ctx = this.ctx;
+        ctx.beginPath();
+        ctx.moveTo(x - ray, y);
+        ctx.lineTo(x + ray, y);
+        ctx.moveTo(x, y - ray);
+        ctx.lineTo(x, y + ray);
+        ctx.stroke();
+    };
+    BoardRenderer.prototype.drawTriangleMark = function (x, y, ray, scaleY) {
+        var triangleX = ray * 1.04;
+        var triangleY = ray * 0.6 * scaleY;
+        var ctx = this.ctx;
+        ctx.beginPath();
+        ctx.moveTo(x, y + ray * scaleY);
+        ctx.lineTo(x - triangleX, y - triangleY);
+        ctx.lineTo(x + triangleX, y - triangleY);
+        ctx.lineTo(x, y + ray * scaleY);
+        ctx.lineTo(x - triangleX, y - triangleY);
+        ctx.stroke();
+    };
     BoardRenderer.prototype.drawLabelAt = function (x, y, vertex, label) {
         this.ctx.fillStyle = this.prepareForDrawingOver(x, y, vertex);
         if (vertex.style)
@@ -526,7 +562,10 @@ var BoardRenderer = (function () {
         var factor = 1.2 - 0.2 * estimatedWidth;
         var fontSize = Math.max(this.fontPx * factor, MIN_FONTSIZE_PX * this.pxRatio);
         this.ctx.font = fontSize + "px Arial";
-        this.ctx.fillText(label, x, y);
+        // Most labels will not use letters going under the baseline (like "j" VS "A")
+        // so we "cheat" by moving all our labels down 5%; it should look better.
+        var adjustY = fontSize * 0.05;
+        this.ctx.fillText(label, x, y + adjustY);
     };
     return BoardRenderer;
 }());
@@ -564,8 +603,17 @@ var Gobo = (function () {
     Gobo.prototype.setLabelAt = function (i, j, label, style) {
         this.board.setLabel(i, j, label, style);
     };
+    Gobo.prototype.getLabelAt = function (i, j) {
+        return this.board.getVertex(i, j).label;
+    };
+    Gobo.prototype.getStyleAt = function (i, j) {
+        return this.board.getVertex(i, j).style;
+    };
     Gobo.prototype.setMarkAt = function (i, j, mark) {
         this.board.setMark(i, j, mark);
+    };
+    Gobo.prototype.getMarkAt = function (i, j) {
+        return this.board.getVertex(i, j).mark;
     };
     // Converts canvas to Gobo coordinates
     Gobo.prototype.pixelToGridCoordinates = function (x, y) {

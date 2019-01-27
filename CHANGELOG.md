@@ -1,4 +1,9 @@
 # gobo
+## 0.7.0
+- New API getMarkAt, getLabelAt, getStyleAt.
+- New marks: triangles "A" and "V", and cross "X"
+## 0.6.0
+- New API changeLook and more rendering options.
 ## 0.5.1
 - Fix: in rare cases (long inaction in browser?) main canvas had its context / text alignment reset.
 ## 0.5.0
