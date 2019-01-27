@@ -72,7 +72,7 @@ class BoardRenderer {
 	shellPatternIndexes: number[][]; // indexes are coordinates as j,i
 	slatePatternIndexes: number[][];
 
-	public constructor(options:{
+	public constructor (options:{
 		widthPx:number,
 		heightPx?:number,
 		marginPx?:number,
@@ -121,7 +121,7 @@ class BoardRenderer {
 		}
 	}
 
-	private setSize(widthPx:number, heightPx?: number) :boolean {
+	private setSize (widthPx:number, heightPx?: number) :boolean {
 		if (!widthPx) {
 			console.error('Invalid gobo widthPx: ' + widthPx);
 			widthPx = 100;
@@ -135,7 +135,7 @@ class BoardRenderer {
 		return true; // changed
 	}
 
-	public prepare(logicalBoard:LogicalBoard) :HTMLCanvasElement {
+	public prepare (logicalBoard:LogicalBoard) :HTMLCanvasElement {
 		this.logicalBoard = logicalBoard;
 		this.computeDimensions();
 
@@ -147,7 +147,7 @@ class BoardRenderer {
 	}
 
 	// NB: this clears canvas' content so one has to call render too
-	public resizeBoard(widthPx:number, heightPx?: number) {
+	public resizeBoard (widthPx:number, heightPx?: number) {
 		if (!this.setSize(widthPx, heightPx)) return;
 
 		this.computeDimensions();
@@ -156,7 +156,7 @@ class BoardRenderer {
 		this.mainCanvas.height = this.boardHeight;
 	}
 
-	public renderAll() {
+	public renderAll () {
 		this.useMainCanvas();
 		this.drawBackground();
 		this.drawGrid();
@@ -165,23 +165,23 @@ class BoardRenderer {
 		this.drawAllObjects();
 	}
 
-	public getCanvas() {
+	public getCanvas () {
 		return this.mainCanvas;
 	}
 
-	private createMainCanvas() {
+	private createMainCanvas () {
 		this.mainCanvas = document.createElement('canvas');
 		this.mainCanvas.width = this.boardWidth;
 		this.mainCanvas.height = this.boardHeight;
 	}
 
-	private useMainCanvas() {
+	private useMainCanvas () {
 		this.ctx = this.mainCanvas.getContext('2d');
 		this.ctx.textAlign = 'center';
 		this.ctx.textBaseline = 'middle';
 	}
 
-	private createAndUseCanvas(width:number, height:number) {
+	private createAndUseCanvas (width:number, height:number) {
 		const canvas = document.createElement('canvas');
 		canvas.width = width;
 		canvas.height = height;
@@ -189,7 +189,7 @@ class BoardRenderer {
 		return canvas;
 	}
 
-	private computeDimensions() {
+	private computeDimensions () {
 		const squareSize = Math.min(this.boardWidth, this.boardHeight);
 		this.boardSize = this.logicalBoard.boardSize;
 
@@ -223,13 +223,13 @@ class BoardRenderer {
 	 * @param y
 	 * @returns [i, j] - with 0,0 as bottom-left corner of the grid
 	 */
-	public pixelToGridCoords(x:number, y:number) :[number,number] {
+	public pixelToGridCoords (x:number, y:number) :[number,number] {
     	const i = Math.round((x - this.vertexLeft) / this.vertexSize);
     	const j = Math.round((this.vertexBottom - y) / this.vertexSize);
 		return [i, j];
 	}
 
-	private prepareBackground() {
+	private prepareBackground () {
 		if (this.bgCanvasOption) {
 			this.bgCanvas = this.bgCanvasOption;
 		} else if (!this.bgOption) {
@@ -246,7 +246,7 @@ class BoardRenderer {
 		}
 	}
 
-	private prepareStonePatterns() {
+	private prepareStonePatterns () {
 		setRandomSeed(this.randomSeed);
 		const size = this.vertexSize;
 		const center = size / 2;
@@ -297,7 +297,7 @@ class BoardRenderer {
 		this.drawSlateStone(center, center, this.stoneRadius / 2);
 	}
 
-	private setBackgroundFillStyle() {
+	private setBackgroundFillStyle () {
 		if (this.bgCanvas) {
 			this.ctx.fillStyle = this.ctx.createPattern(this.bgCanvas, 'repeat');
 		} else {
@@ -305,12 +305,12 @@ class BoardRenderer {
 		}
 	}
 
-	private drawBackground() {
+	private drawBackground () {
 		this.setBackgroundFillStyle();
 		this.ctx.fillRect(0, 0, this.boardWidth, this.boardHeight);
 	}
 
-	private drawGrid() {
+	private drawGrid () {
 		this.ctx.strokeStyle = '#000';
 		this.ctx.lineWidth = 1;
 		this.ctx.beginPath();
@@ -327,7 +327,7 @@ class BoardRenderer {
 		this.ctx.stroke();
 	}
 
-	private drawStarPoints() {
+	private drawStarPoints () {
 		this.ctx.fillStyle = '#000';
 		let points = starPoints[this.boardSize];
 		if (!points) return;
@@ -341,7 +341,7 @@ class BoardRenderer {
 		}
 	}
 
-	private drawCoordinates() {
+	private drawCoordinates () {
 		this.ctx.fillStyle = '#000';
 		this.ctx.font = this.coordFontPx + "px Arial";
 		const letters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
@@ -370,7 +370,7 @@ class BoardRenderer {
 	}
 
 	// Stones, marks, labels
-	private drawAllObjects() {
+	private drawAllObjects () {
 		const levelCount = this.onlySketch ? 1 : 2;
 
 		for (let level = 0; level < levelCount; level++) {
@@ -382,7 +382,7 @@ class BoardRenderer {
 		}
 	}
 
-	private renderAt(i:number, j:number, level:number) {
+	private renderAt (i:number, j:number, level:number) {
 		const x = i * this.vertexSize + this.vertexLeft;
 		const y = this.vertexBottom - j * this.vertexSize;
 		const vertex = this.logicalBoard.getVertex(i, j);
@@ -404,13 +404,13 @@ class BoardRenderer {
 		}
 	}
 
-	private renderStoneShadow(x:number, y:number) {
+	private renderStoneShadow (x:number, y:number) {
 		const dist = this.stoneRadius * DIST_SHADOW;
 		const r = this.stoneRadius - dist;
 		this.ctx.drawImage(this.stoneShadow, x - r, y - r);
 	}
 
-	private renderStoneAt(x:number, y:number, color:Color, i:number, j:number) {
+	private renderStoneAt (x:number, y:number, color:Color, i:number, j:number) {
 		if (this.onlySketch) return this.renderSketchStoneAt(x, y, color, this.stoneRadius);
 
 		let stoneCollection, index;
@@ -426,14 +426,14 @@ class BoardRenderer {
 		this.ctx.drawImage(img, x - this.stoneRadius, y - this.stoneRadius);
 	}
 
-	private renderSketchStoneAt(x:number, y:number, color:Color, radius:number) {
+	private renderSketchStoneAt (x:number, y:number, color:Color, radius:number) {
 		this.ctx.fillStyle = color === Color.BLACK ? 'rgb(0,0,0)' : 'rgb(255,255,255)';
 		this.ctx.beginPath();
 		this.ctx.arc(x, y, radius * 0.93, 0, 2 * Math.PI);
 		this.ctx.fill();
 	}
 
-	private renderMiniStoneAt(x:number, y:number, color:Color, underStone:Color) {
+	private renderMiniStoneAt (x:number, y:number, color:Color, underStone:Color) {
 		if (this.onlySketch || underStone !== Color.EMPTY) {
 			const radius = this.stoneRadius * 0.4;
 			return this.renderSketchStoneAt(x, y, color, radius);
@@ -444,7 +444,7 @@ class BoardRenderer {
 		}
 	}
 
-	private drawStoneShadow(x:number, y:number) {
+	private drawStoneShadow (x:number, y:number) {
 		var blur = this.stoneRadius * 0.1;
 		var radius = this.stoneRadius * 0.95;
 
@@ -459,7 +459,7 @@ class BoardRenderer {
 		this.ctx.fill();
 	}
 
-	private drawLightReflexion(x:number, y:number, radius:number, colorIn:string, colorOut:string, radiusIn:number, radiusOut:number) {
+	private drawLightReflexion (x:number, y:number, radius:number, colorIn:string, colorOut:string, radiusIn:number, radiusOut:number) {
 		const d = radius / 5;
 		const radgrad = this.ctx.createRadialGradient(
 			x - 2 * d, y - 2 * d, radiusIn * radius,
@@ -474,7 +474,7 @@ class BoardRenderer {
 		this.ctx.fill();
 	}
 
-	private drawSlateStone(x:number, y:number, radius:number) {
+	private drawSlateStone (x:number, y:number, radius:number) {
 		if (!this.withSimpleStones) {
 			const radiusOut = 0.8 - pseudoRandom() * 0.2;
 
@@ -495,7 +495,7 @@ class BoardRenderer {
 	 * @license Clamshell stones drawing algorithm based on Jan Prokop's WGo.js
 	 * (http://wgo.waltheri.net/)
 	 */
-	private drawShellStone(x:number, y:number, radius:number) {
+	private drawShellStone (x:number, y:number, radius:number) {
 		this.drawLightReflexion(x, y, radius, '#fff', '#aaa', 0.33, 1);
 
 		if (!this.withSimpleStones) {
@@ -507,7 +507,7 @@ class BoardRenderer {
 		}
 	}
 
-	private drawShell(x:number, y:number, radius:number, angle:number, lines:number[], factor:number, thickness:number) {
+	private drawShell (x:number, y:number, radius:number, angle:number, lines:number[], factor:number, thickness:number) {
 		let fromAngle = angle;
 		let toAngle = angle;
 
@@ -519,7 +519,7 @@ class BoardRenderer {
 		}
 	}
 
-	private drawShellLine(x:number, y:number, radius:number, start_angle:number, end_angle:number,
+	private drawShellLine (x:number, y:number, radius:number, start_angle:number, end_angle:number,
                           factor:number, thickness:number, alpha:number) {
 		const ctx = this.ctx;
 		alpha = ~~(alpha * 100) / 100;
@@ -560,7 +560,7 @@ class BoardRenderer {
 		ctx.stroke();
 	}
 
-	private prepareForDrawingOver(x:number, y:number, vertex:Vertex) {
+	private prepareForDrawingOver (x:number, y:number, vertex:Vertex) {
 		switch (vertex.stoneColor) {
 		case Color.EMPTY:
 			if (vertex.mark[0] !== '+') {
@@ -576,7 +576,7 @@ class BoardRenderer {
 		}
 	}
 
-	private drawMarkAt(x:number, y:number, vertex:Vertex) {
+	private drawMarkAt (x:number, y:number, vertex:Vertex) {
 		const ctx = this.ctx;
 		const markAndParams = vertex.mark.split(':');
 		const mark = markAndParams[0];
@@ -625,7 +625,7 @@ class BoardRenderer {
 		}
 	}
 
-	private drawLabelAt(x:number, y:number, vertex:Vertex, label:string) {
+	private drawLabelAt (x:number, y:number, vertex:Vertex, label:string) {
 		this.ctx.fillStyle = this.prepareForDrawingOver(x, y, vertex);
 		if (vertex.style) this.ctx.fillStyle = vertex.style;
 
