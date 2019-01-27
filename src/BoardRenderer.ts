@@ -601,7 +601,7 @@ class BoardRenderer {
 		case '*':
 			ctx.fillStyle = this.prepareForDrawingOver(x, y, vertex);
 			ctx.font = (1.5 * this.fontPx) + "px Arial";
-			ctx.fillText('*', x, y + this.fontPx * 0.35);
+			ctx.fillText('*', x, y + this.fontPx * 0.42);
 			break;
 		case '+':
 			ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
@@ -638,7 +638,11 @@ class BoardRenderer {
 
 		this.ctx.font = fontSize + "px Arial";
 
-		this.ctx.fillText(label, x, y);
+		// Most labels will not use letters going under the baseline (like "j" VS "A")
+		// so we "cheat" by moving all our labels down 5%; it should look better.
+		const adjustY = fontSize * 0.05;
+
+		this.ctx.fillText(label, x, y + adjustY);
 	}
 }
 
