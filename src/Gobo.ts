@@ -60,8 +60,20 @@ class Gobo {
 		this.board.setLabel(i, j, label, style);
 	}
 
+	public getLabelAt(i:number, j:number) :string {
+		return this.board.getVertex(i, j).label;
+	}
+
+	public getStyleAt(i:number, j:number) :string {
+		return this.board.getVertex(i, j).style;
+	}
+
 	public setMarkAt(i:number, j:number, mark:string) {
 		this.board.setMark(i, j, mark);
+	}
+
+	public getMarkAt(i:number, j:number) :string {
+		return this.board.getVertex(i, j).mark;
 	}
 
 	// Converts canvas to Gobo coordinates
