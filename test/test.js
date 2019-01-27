@@ -76,16 +76,30 @@ function testLabelsAndMarks() {
     gobo.setLabelAt(3, 4, '12');
     gobo.setStoneAt(3, 5, BLACK);
     gobo.setLabelAt(3, 5, '1');
+    gobo.setStoneAt(4, 3, BLACK);
+    gobo.setLabelAt(4, 3, 'B');
     gobo.setStoneAt(5, 3, WHITE);
-    gobo.setLabelAt(5, 3, 'B');
+    gobo.setLabelAt(5, 3, 'j');
     gobo.setStoneAt(6, 5, WHITE);
     gobo.setLabelAt(6, 5, '9.9');
     gobo.setStoneAt(6, 4, WHITE);
     gobo.setLabelAt(6, 4, '299');
     gobo.setStoneAt(6, 6, WHITE);
     gobo.setLabelAt(6, 6, '9999');
+    gobo.setMarkAt(6, 2, '*');
+    gobo.setMarkAt(4, 1, 'A:10,2');
+    gobo.setStoneAt(5, 1, WHITE);
+    gobo.setMarkAt(5, 1, 'V:10');
+    gobo.setMarkAt(6, 1, 'X');
     gobo.render();
-    createSample(width, gobo.canvas, 'Labels & marks, sketch mode', 'Some examples of what you can do with labels and marks.', "var gobo = new Gobo({ gobanSize: 7, isSketch: true, widthPx: 350, background: '#dcb' });\n\ngobo.setMarkAt(0, 1, 'O');\ngobo.setStoneAt(0, 0, BLACK); gobo.setMarkAt(0, 0, 'O');\ngobo.setStoneAt(0, 2, WHITE); gobo.setMarkAt(0, 2, 'O:5,8');\n\ngobo.setMarkAt(2, 1, '[]');\ngobo.setStoneAt(2, 0, BLACK); gobo.setMarkAt(2, 0, '[]');\ngobo.setStoneAt(2, 2, WHITE); gobo.setMarkAt(2, 2, '[]:5,2');\n\ngobo.setStoneAt(1, 3, BLACK); gobo.setMarkAt(1, 3, '+:4,1');\ngobo.setStoneAt(1, 4, WHITE); gobo.setMarkAt(1, 4, '+');\n\ngobo.setLabelAt(3, 3, 'A'); gobo.setLabelAt(3, 4, '12');\ngobo.setStoneAt(3, 5, BLACK); gobo.setLabelAt(3, 5, '1');\n\ngobo.setStoneAt(5, 3, WHITE); gobo.setLabelAt(5, 3, 'B');\ngobo.setStoneAt(6, 5, WHITE); gobo.setLabelAt(6, 5, '9.9');\ngobo.setStoneAt(6, 4, WHITE); gobo.setLabelAt(6, 4, '299');\ngobo.setStoneAt(6, 6, WHITE); gobo.setLabelAt(6, 6, '9999');\n\ngobo.render();");
+    var intro = newDiv(null, 'intro', 'Some examples of what you can do with labels and marks.');
+    newDiv(intro, 'intro', 'Syntax of mark string is: code[:size[,lineWidth]]');
+    newDiv(intro, 'intro', 'So for example:');
+    newDiv(intro, 'codeInText', "gobo.setMarkAt(1, 3, '+:4,1')");
+    newDiv(intro, 'intro', 'Means: Add in (1,3) a "+" mark of size = 4 and line width = 1');
+    newDiv(intro, 'intro', 'Default size is 10, equals to the diameter of a stone.');
+    newDiv(intro, 'intro', 'Default line width is 5, which is quite thick. With 1 being a very thin line (actually not very visible, see example below).');
+    createSample(width, gobo.canvas, 'Labels & marks, sketch mode', intro, "var gobo = new Gobo({ gobanSize: 7, isSketch: true, widthPx: 350, background: '#dcb' });\n\ngobo.setMarkAt(0, 1, 'O');\ngobo.setStoneAt(0, 0, BLACK); gobo.setMarkAt(0, 0, 'O');\ngobo.setStoneAt(0, 2, WHITE); gobo.setMarkAt(0, 2, 'O:5,8');\n\ngobo.setMarkAt(2, 1, '[]');\ngobo.setStoneAt(2, 0, BLACK); gobo.setMarkAt(2, 0, '[]');\ngobo.setStoneAt(2, 2, WHITE); gobo.setMarkAt(2, 2, '[]:5,2');\n\ngobo.setStoneAt(1, 3, BLACK); gobo.setMarkAt(1, 3, '+:4,1');\ngobo.setStoneAt(1, 4, WHITE); gobo.setMarkAt(1, 4, '+');\n\ngobo.setLabelAt(3, 3, 'A'); gobo.setLabelAt(3, 4, '12');\ngobo.setStoneAt(3, 5, BLACK); gobo.setLabelAt(3, 5, '1');\n\ngobo.setStoneAt(4, 3, BLACK); gobo.setLabelAt(4, 3, 'B');\ngobo.setStoneAt(5, 3, WHITE); gobo.setLabelAt(5, 3, 'j');\ngobo.setStoneAt(6, 5, WHITE); gobo.setLabelAt(6, 5, '9.9');\ngobo.setStoneAt(6, 4, WHITE); gobo.setLabelAt(6, 4, '299');\ngobo.setStoneAt(6, 6, WHITE); gobo.setLabelAt(6, 6, '9999');\n\ngobo.setMarkAt(6, 2, '*');\ngobo.setMarkAt(4, 1, 'A:10,2');\ngobo.setStoneAt(5, 1, WHITE); gobo.setMarkAt(5, 1, 'V:10');\ngobo.setMarkAt(6, 1, 'X');\n\ngobo.render();");
 }
 /**
  * You can use your own image as background (some look better than others).
@@ -140,8 +154,14 @@ function newGobo(options) {
 function createSample(width, canvas, title, intro, code) {
     if (title)
         newDiv(document.body, 'subtitle', title);
-    if (intro)
-        newDiv(document.body, 'intro', intro);
+    if (intro) {
+        if (typeof intro === 'string') {
+            newDiv(document.body, 'intro', intro);
+        }
+        else {
+            document.body.appendChild(intro);
+        }
+    }
     var sampleDiv = newDiv(document.body, 'sampleDiv');
     var boardDiv = newDiv(sampleDiv, 'boardDiv');
     canvas.style.width = canvas.style.height = width + 'px';
@@ -153,7 +173,8 @@ function newDiv(parent, className, text) {
     var div = document.createElement('div');
     if (className)
         div.className = className;
-    parent.appendChild(div);
+    if (parent !== null)
+        parent.appendChild(div);
     if (text)
         div.innerText = text;
     return div;

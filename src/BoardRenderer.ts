@@ -603,15 +603,20 @@ class BoardRenderer {
 			ctx.font = (1.5 * this.fontPx) + "px Arial";
 			ctx.fillText('*', x, y + this.fontPx * 0.42);
 			break;
+		case 'X':
+			ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
+			ctx.lineWidth = lineWidth;
+			this.drawCrossMark(x, y, half);
+			break;
 		case '+':
 			ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
 			ctx.lineWidth = lineWidth;
-			ctx.beginPath();
-			ctx.moveTo(x - half, y);
-			ctx.lineTo(x + half, y);
-			ctx.moveTo(x, y - half);
-			ctx.lineTo(x, y + half);
-			ctx.stroke();
+			this.drawPlusMark(x, y, half);
+			break;
+		case 'V': case 'A':
+			ctx.strokeStyle = this.prepareForDrawingOver(x, y, vertex);
+			ctx.lineWidth = lineWidth;
+			this.drawTriangleMark(x, y, half, mark === 'V' ? 1 : -1);
 			break;
 		case '+?':
 			ctx.fillStyle = '#888';
@@ -623,6 +628,40 @@ class BoardRenderer {
 		default:
 			console.error('Unknown mark type: ' + vertex.mark);
 		}
+	}
+
+	private drawCrossMark (x:number, y:number, ray:number) {
+		const ctx = this.ctx;
+		ctx.beginPath();
+		ctx.moveTo(x - ray, y - ray);
+		ctx.lineTo(x + ray, y + ray);
+		ctx.moveTo(x + ray, y - ray);
+		ctx.lineTo(x - ray, y + ray);
+		ctx.stroke();
+	}
+
+	private drawPlusMark (x:number, y:number, ray:number) {
+		const ctx = this.ctx;
+		ctx.beginPath();
+		ctx.moveTo(x - ray, y);
+		ctx.lineTo(x + ray, y);
+		ctx.moveTo(x, y - ray);
+		ctx.lineTo(x, y + ray);
+		ctx.stroke();
+	}
+
+	private drawTriangleMark (x:number, y:number, ray:number, scaleY:number) {
+		const triangleX = ray * 1.04;
+		const triangleY = ray * 0.6 * scaleY;
+		const ctx = this.ctx;
+
+		ctx.beginPath();
+		ctx.moveTo(x, y + ray * scaleY);
+		ctx.lineTo(x - triangleX, y - triangleY);
+		ctx.lineTo(x + triangleX, y - triangleY);
+		ctx.lineTo(x, y + ray * scaleY);
+		ctx.lineTo(x - triangleX, y - triangleY);
+		ctx.stroke();
 	}
 
 	private drawLabelAt (x:number, y:number, vertex:Vertex, label:string) {

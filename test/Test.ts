@@ -122,16 +122,30 @@ function testLabelsAndMarks() {
 	gobo.setLabelAt(3, 3, 'A'); gobo.setLabelAt(3, 4, '12');
 	gobo.setStoneAt(3, 5, BLACK); gobo.setLabelAt(3, 5, '1');
 
-	gobo.setStoneAt(5, 3, WHITE); gobo.setLabelAt(5, 3, 'B');
+	gobo.setStoneAt(4, 3, BLACK); gobo.setLabelAt(4, 3, 'B');
+	gobo.setStoneAt(5, 3, WHITE); gobo.setLabelAt(5, 3, 'j');
 	gobo.setStoneAt(6, 5, WHITE); gobo.setLabelAt(6, 5, '9.9');
 	gobo.setStoneAt(6, 4, WHITE); gobo.setLabelAt(6, 4, '299');
 	gobo.setStoneAt(6, 6, WHITE); gobo.setLabelAt(6, 6, '9999');
 
+	gobo.setMarkAt(6, 2, '*');
+	gobo.setMarkAt(4, 1, 'A:10,2');
+	gobo.setStoneAt(5, 1, WHITE); gobo.setMarkAt(5, 1, 'V:10');
+	gobo.setMarkAt(6, 1, 'X');
+
 	gobo.render();
+
+	const intro = newDiv(null, 'intro', 'Some examples of what you can do with labels and marks.');
+	newDiv(intro, 'intro', 'Syntax of mark string is: code[:size[,lineWidth]]');
+	newDiv(intro, 'intro', 'So for example:');
+	newDiv(intro, 'codeInText', `gobo.setMarkAt(1, 3, '+:4,1')`);
+	newDiv(intro, 'intro', 'Means: Add in (1,3) a "+" mark of size = 4 and line width = 1');
+	newDiv(intro, 'intro', 'Default size is 10, equals to the diameter of a stone.');
+	newDiv(intro, 'intro', 'Default line width is 5, which is quite thick. With 1 being a very thin line (actually not very visible, see example below).');
 
 	createSample(width, gobo.canvas,
 		'Labels & marks, sketch mode',
-		'Some examples of what you can do with labels and marks.',
+		intro,
 `var gobo = new Gobo({ gobanSize: 7, isSketch: true, widthPx: 350, background: '#dcb' });
 
 gobo.setMarkAt(0, 1, 'O');
@@ -148,10 +162,16 @@ gobo.setStoneAt(1, 4, WHITE); gobo.setMarkAt(1, 4, '+');
 gobo.setLabelAt(3, 3, 'A'); gobo.setLabelAt(3, 4, '12');
 gobo.setStoneAt(3, 5, BLACK); gobo.setLabelAt(3, 5, '1');
 
-gobo.setStoneAt(5, 3, WHITE); gobo.setLabelAt(5, 3, 'B');
+gobo.setStoneAt(4, 3, BLACK); gobo.setLabelAt(4, 3, 'B');
+gobo.setStoneAt(5, 3, WHITE); gobo.setLabelAt(5, 3, 'j');
 gobo.setStoneAt(6, 5, WHITE); gobo.setLabelAt(6, 5, '9.9');
 gobo.setStoneAt(6, 4, WHITE); gobo.setLabelAt(6, 4, '299');
 gobo.setStoneAt(6, 6, WHITE); gobo.setLabelAt(6, 6, '9999');
+
+gobo.setMarkAt(6, 2, '*');
+gobo.setMarkAt(4, 1, 'A:10,2');
+gobo.setStoneAt(5, 1, WHITE); gobo.setMarkAt(5, 1, 'V:10');
+gobo.setMarkAt(6, 1, 'X');
 
 gobo.render();`);
 }
@@ -248,10 +268,16 @@ function newGobo(options:any) {
 }
 
 function createSample(width:number, canvas:HTMLCanvasElement,
-	title:string, intro:string, code:string) : {boardDiv:HTMLDivElement, textDiv:HTMLDivElement} {
+	title:string, intro:any, code:string) : {boardDiv:HTMLDivElement, textDiv:HTMLDivElement} {
 
 	if (title) newDiv(document.body, 'subtitle', title);
-	if (intro) newDiv(document.body, 'intro', intro);
+	if (intro) {
+		if (typeof intro === 'string') {
+			newDiv(document.body, 'intro', intro);
+		} else {
+			document.body.appendChild(intro);
+		}
+	}
 
 	const sampleDiv = newDiv(document.body, 'sampleDiv');
 
@@ -267,7 +293,7 @@ function createSample(width:number, canvas:HTMLCanvasElement,
 function newDiv(parent:HTMLElement, className?:string, text?:string) :HTMLDivElement {
 	const div = document.createElement('div');
 	if (className) div.className = className;
-	parent.appendChild(div);
+	if (parent !== null) parent.appendChild(div);
 	if (text) div.innerText = text;
 	return div;
 }
