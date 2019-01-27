@@ -12,29 +12,29 @@ class Vertex {
 	mark: string;
 	style: string; // e.g. '#f00' for red color
 
-	constructor() {
+	constructor () {
 		this.clearVertex();
 	}
 
-	clearVertex() {
+	clearVertex () {
 		this.stoneColor = Color.EMPTY;
 		this.label = '';
 		this.mark = '';
 	}
 
-	setStone(color:Color) {
+	setStone (color:Color) {
 		this.stoneColor = color;
 	}
 
-	setLabel(label:string) {
+	setLabel (label:string) {
 		this.label = label;
 	}
 
-	setMark(mark:string) {
+	setMark (mark:string) {
 		this.mark = mark;
 	}
 
-	setStyle(style:string) {
+	setStyle (style:string) {
 		this.style = style;
 	}
 }

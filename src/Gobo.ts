@@ -8,7 +8,7 @@ class Gobo {
 	renderer: BoardRenderer;
 	public canvas: HTMLCanvasElement;
 
-	constructor(options:{
+	constructor (options:{
 		gobanSize?:number,
 		widthPx:number,
 		heightPx?:number,
@@ -36,48 +36,48 @@ class Gobo {
 		this.renderer.changeLook(options);
 	}
 
-	public resize(widthPx:number, heightPx?: number) {
+	public resize (widthPx:number, heightPx?: number) {
 		this.renderer.resizeBoard(widthPx, heightPx);
 	}
 
-	public render() {
+	public render () {
 		this.renderer.renderAll();
 	}
 
-	public setStoneAt(i:number, j:number, color:Color) {
+	public setStoneAt (i:number, j:number, color:Color) {
 		this.board.setStone(i, j, color);
 	}
 
-	public clearVertexAt(i:number, j:number) {
+	public clearVertexAt (i:number, j:number) {
 		this.board.clearVertex(i, j);
 	}
 
-	public getStoneColorAt(i:number, j:number) :Color {
+	public getStoneColorAt (i:number, j:number) :Color {
 		return this.board.getVertex(i, j).stoneColor;
 	}
 
-	public setLabelAt(i:number, j:number, label:string, style?:string) {
+	public setLabelAt (i:number, j:number, label:string, style?:string) {
 		this.board.setLabel(i, j, label, style);
 	}
 
-	public getLabelAt(i:number, j:number) :string {
+	public getLabelAt (i:number, j:number) :string {
 		return this.board.getVertex(i, j).label;
 	}
 
-	public getStyleAt(i:number, j:number) :string {
+	public getStyleAt (i:number, j:number) :string {
 		return this.board.getVertex(i, j).style;
 	}
 
-	public setMarkAt(i:number, j:number, mark:string) {
+	public setMarkAt (i:number, j:number, mark:string) {
 		this.board.setMark(i, j, mark);
 	}
 
-	public getMarkAt(i:number, j:number) :string {
+	public getMarkAt (i:number, j:number) :string {
 		return this.board.getVertex(i, j).mark;
 	}
 
 	// Converts canvas to Gobo coordinates
-	public pixelToGridCoordinates(x:number, y:number) :number[] {
+	public pixelToGridCoordinates (x:number, y:number) :number[] {
 		return this.renderer.pixelToGridCoords(x, y);
 	}
 }
