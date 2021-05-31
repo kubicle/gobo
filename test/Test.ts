@@ -108,6 +108,10 @@ function testLabelsAndMarks() {
 
 	const gobo = newGobo({ gobanSize: 7, isSketch: true, widthPx: width, background: '#dcb' });
 
+	gobo.setMarkAt(0, 6, '+Wo');
+	gobo.setMarkAt(1, 6, '+Bo');
+	gobo.setMarkAt(2, 6, '+?');
+
 	gobo.setMarkAt(0, 1, 'O');
 	gobo.setStoneAt(0, 0, BLACK); gobo.setMarkAt(0, 0, 'O');
 	gobo.setStoneAt(0, 2, WHITE); gobo.setMarkAt(0, 2, 'O:5,8');
@@ -147,6 +151,10 @@ function testLabelsAndMarks() {
 		'Labels & marks, sketch mode',
 		intro,
 `var gobo = new Gobo({ gobanSize: 7, isSketch: true, widthPx: 350, background: '#dcb' });
+
+gobo.setMarkAt(0, 6, '+Wo');
+gobo.setMarkAt(1, 6, '+Bo');
+gobo.setMarkAt(2, 6, '+?');
 
 gobo.setMarkAt(0, 1, 'O');
 gobo.setStoneAt(0, 0, BLACK); gobo.setMarkAt(0, 0, 'O');

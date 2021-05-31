@@ -58,6 +58,9 @@ function addStoneAndRender(gobo, count, cb) {
 function testLabelsAndMarks() {
     var width = 350;
     var gobo = newGobo({ gobanSize: 7, isSketch: true, widthPx: width, background: '#dcb' });
+    gobo.setMarkAt(0, 6, '+Wo');
+    gobo.setMarkAt(1, 6, '+Bo');
+    gobo.setMarkAt(2, 6, '+?');
     gobo.setMarkAt(0, 1, 'O');
     gobo.setStoneAt(0, 0, BLACK);
     gobo.setMarkAt(0, 0, 'O');
@@ -99,7 +102,7 @@ function testLabelsAndMarks() {
     newDiv(intro, 'intro', 'Means: Add in (1,3) a "+" mark of size = 4 and line width = 1');
     newDiv(intro, 'intro', 'Default size is 10, equals to the diameter of a stone.');
     newDiv(intro, 'intro', 'Default line width is 5, which is quite thick. With 1 being a very thin line (actually not very visible, see example below).');
-    createSample(width, gobo.canvas, 'Labels & marks, sketch mode', intro, "var gobo = new Gobo({ gobanSize: 7, isSketch: true, widthPx: 350, background: '#dcb' });\n\ngobo.setMarkAt(0, 1, 'O');\ngobo.setStoneAt(0, 0, BLACK); gobo.setMarkAt(0, 0, 'O');\ngobo.setStoneAt(0, 2, WHITE); gobo.setMarkAt(0, 2, 'O:5,8');\n\ngobo.setMarkAt(2, 1, '[]');\ngobo.setStoneAt(2, 0, BLACK); gobo.setMarkAt(2, 0, '[]');\ngobo.setStoneAt(2, 2, WHITE); gobo.setMarkAt(2, 2, '[]:5,2');\n\ngobo.setStoneAt(1, 3, BLACK); gobo.setMarkAt(1, 3, '+:4,1');\ngobo.setStoneAt(1, 4, WHITE); gobo.setMarkAt(1, 4, '+');\n\ngobo.setLabelAt(3, 3, 'A'); gobo.setLabelAt(3, 4, '12');\ngobo.setStoneAt(3, 5, BLACK); gobo.setLabelAt(3, 5, '1');\n\ngobo.setStoneAt(4, 3, BLACK); gobo.setLabelAt(4, 3, 'B');\ngobo.setStoneAt(5, 3, WHITE); gobo.setLabelAt(5, 3, 'j');\ngobo.setStoneAt(6, 5, WHITE); gobo.setLabelAt(6, 5, '9.9');\ngobo.setStoneAt(6, 4, WHITE); gobo.setLabelAt(6, 4, '299');\ngobo.setStoneAt(6, 6, WHITE); gobo.setLabelAt(6, 6, '9999');\n\ngobo.setMarkAt(6, 2, '*');\ngobo.setMarkAt(4, 1, 'A:10,2');\ngobo.setStoneAt(5, 1, WHITE); gobo.setMarkAt(5, 1, 'V:10');\ngobo.setMarkAt(6, 1, 'X');\n\ngobo.render();");
+    createSample(width, gobo.canvas, 'Labels & marks, sketch mode', intro, "var gobo = new Gobo({ gobanSize: 7, isSketch: true, widthPx: 350, background: '#dcb' });\n\ngobo.setMarkAt(0, 6, '+Wo');\ngobo.setMarkAt(1, 6, '+Bo');\ngobo.setMarkAt(2, 6, '+?');\n\ngobo.setMarkAt(0, 1, 'O');\ngobo.setStoneAt(0, 0, BLACK); gobo.setMarkAt(0, 0, 'O');\ngobo.setStoneAt(0, 2, WHITE); gobo.setMarkAt(0, 2, 'O:5,8');\n\ngobo.setMarkAt(2, 1, '[]');\ngobo.setStoneAt(2, 0, BLACK); gobo.setMarkAt(2, 0, '[]');\ngobo.setStoneAt(2, 2, WHITE); gobo.setMarkAt(2, 2, '[]:5,2');\n\ngobo.setStoneAt(1, 3, BLACK); gobo.setMarkAt(1, 3, '+:4,1');\ngobo.setStoneAt(1, 4, WHITE); gobo.setMarkAt(1, 4, '+');\n\ngobo.setLabelAt(3, 3, 'A'); gobo.setLabelAt(3, 4, '12');\ngobo.setStoneAt(3, 5, BLACK); gobo.setLabelAt(3, 5, '1');\n\ngobo.setStoneAt(4, 3, BLACK); gobo.setLabelAt(4, 3, 'B');\ngobo.setStoneAt(5, 3, WHITE); gobo.setLabelAt(5, 3, 'j');\ngobo.setStoneAt(6, 5, WHITE); gobo.setLabelAt(6, 5, '9.9');\ngobo.setStoneAt(6, 4, WHITE); gobo.setLabelAt(6, 4, '299');\ngobo.setStoneAt(6, 6, WHITE); gobo.setLabelAt(6, 6, '9999');\n\ngobo.setMarkAt(6, 2, '*');\ngobo.setMarkAt(4, 1, 'A:10,2');\ngobo.setStoneAt(5, 1, WHITE); gobo.setMarkAt(5, 1, 'V:10');\ngobo.setMarkAt(6, 1, 'X');\n\ngobo.render();");
 }
 /**
  * You can use your own image as background (some look better than others).
